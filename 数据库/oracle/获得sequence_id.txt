@@ -1,0 +1,6 @@
+CREATE OR REPLACE TRIGGER TR_DEL_JOBS_ID BEFORE
+INSERT ON TB_DEL_JOBS FOR EACH ROW 
+when (new.id is null)
+begin
+select del_jobs_sequence.nextval into :new.id from dual;
+end;

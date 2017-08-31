@@ -1,0 +1,4 @@
+<style>
+		table {border-collapse:collapse;border-style: none none none none;} 
+		td {border:1px solid #666;}
+	</style>

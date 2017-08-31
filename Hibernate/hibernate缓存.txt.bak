@@ -1,0 +1,5 @@
+1 Session 级别的缓存又叫做一级缓存，SessionFactory级别的缓存叫做二级缓存
+
+ 临时状态：（transient）：刚刚用new语句创建，还没有被持久化，不处于Session的缓存中（跟数据库没有关联）
+ 持久化状态：（persistent）：已经被持久化，加入到Session的缓存中（跟数据库关联了，具备了OID）
+ 游离状态：（detached）：几经被持久化，但不再处于Session的缓存中（Session已关闭）

@@ -1,0 +1,11 @@
+web10
+1 为什么说servlet会有线程安全问题
+  当容器收到一个请求之后，会启动一个线程来处理该请求，如果有多个请求到达容器，并且这多个请求要访问的是同一个servlet，则会发生多个线程调用同一个servlet实例的情况，此时，就需要考虑线程安全问题了
+2 如何处理线程安全问题
+  a 加锁  使用synchronized对方法或者代码块加锁，但会影响性能
+    synchronized(this){
+	count++;
+    }
+  b 让一个servlet实现SingleThreadModel接口，容器会为这样的servlet（实现了SingleThreadModel接口）创建多个实例（一个线程一个实例），因为有可能会产生过多的servlet实例，所以，在比较大的应用中应尽量少用
+
+   

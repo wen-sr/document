@@ -1,0 +1,118 @@
+﻿掌握Spring框架容器的使用
+掌握Spring框架IOC特性的使用
+掌握Spring框架AOP特性的使用
+掌握Spring如何整合JDBC,Hibernate
+掌握Spring如何整合Struts2
+掌握Spring如何进行事务管理
+---------------------
+1.Spring框架作用和优点
+  Spring框架主要负责技术整合，该框架提供IOC和AOP机制，基于这些特性整合，可以降低系统组件之间的耦合度，便于系统组件的维护、扩展和替换。
+
+ 在SSH中，主要是利用Spring容器管理我们程序中的Action,DAO等组件，通过容器的IOC和AOP机制，利用IOC特性可以降低Action和DAO之间的关联，利用AOP进行事务管理等共通部分处理
+
+*2.Spring框架的容器
+ Spring框架的核心是提供了一个容器。该容器类型是BeanFactory或ApplicationContext。该容器具有以下功能：
+  a.容器可以创建和销毁组件对象
+  （等价于原来工厂的作用）
+  b.容器可以采用不同模式创建对象
+  c.容器具有IOC机制实现
+  d.容器具有AOP机制实现
+
+3.Spring容器的基本应用
+  *1)如何将一个Bean组件交给Spring容器
+  方法：在applicationCotnext.xml中添加以下定义
+  <bean id="标识符" 
+        class="Bean组件类型">
+  </bean>
+  *2)如何获取Spring容器对象
+ ApplicationContext ac = new ClassPathXmlApplicationContext(“/applicationContext.xml”);
+//FileSystemXmlApplicationContext
+  利用ac.getBean("标识符")方法获取容器中的Bean对象。
+  *3)如何控制对象创建的模式
+   支持singleton和prototype两种模式，默认是singleton模式。可以通过<bean>的scope属性修改。
+  （以后再Web程序中，通过扩展可以使用request,session等值）
+  4)Bean对象创建的时机
+  singleton模式的Bean组件是在容器实例化时创建；prototype是在调用getBean()方法时创建。
+  singleton模式可以利用<bean>元素的lazy-init="true"属性将对象创建工作推迟到getBean()方法。也可以在<beans>中使用
+default-lazy-init="true"推迟所有单例Bean组件的创建工作。
+  5)为Bean对象指定初始化和销毁方法
+可以利用<bean>元素的init-method属性指定初始化方法；利用destroy-method属性指定销毁方法。
+ 指定的初始化方法是在构造方法调用后自动执行。
+ 指定的销毁方法是在容器close时触发，而且只适用于singleton模式的组件。
+
+*4.Spring框架IOC特性
+ 1)IOC概念
+  Inverse of Controller被称为控制反转或反向控制（控制转移）。
+  所谓的控制指的是负责对象关系的指定、对象创建、初始化和销毁等逻辑。
+  IOC指的是将控制逻辑交给第三方框架或容器负责，当两个组件关系发生改变时，只需要修改框架或容器配置即可。
+  IOC主要解决的是两个组件对象调用问题，可以以低耦合方式建立使用关系。
+ 2)DI概念
+  Dependency Injection依赖注入。
+ Spring框架采用DI技术实现了IOC控制思想。Spring提供了两种注入方法
+  a.setter方式注入
+   依靠的set方法，将组件对象传入
+   --首先添加属性变量和setter方法
+   --之后在<bean>定义部分采用下面描述方法
+     <property name="属性名"
+        ref="要注入的对象Id值">
+     </property>
+
+  b.构造方式注入
+   依靠构造方法，将组件对象传入
+  --在需要注入的组件中，添加带参数的构造方法
+  --在该组件的<bean>定义中，使用下面格式描述
+<constructor-arg index="参数索引"
+  ref="要注入的Bean组件id值">
+<constructor-arg>
+
+5.Spring各种类型数据的注入
+  Spring可以为对象注入以下类型的数据。
+  1)Bean对象的注入
+  <property name="属性" 
+    ref="要注入的Bean对象id">
+  2)基本数据的注入
+  例如字符串、数字等
+  <property name="属性"
+    value="要注入的值">
+  3)集合数据的注入
+   List,Set,Map,Properties
+
+6.AOP概念
+  Aspect Oriented Programming
+被称为面向方面编程。
+  OOP是面向对象编程，AOP是以OOP为基础。OOP主要关注的是对象，如何抽象和封装对象。AOP主要关注的是方面，方面组件可以以低耦合方式切入到其他某一批目标对象方法中。
+  AOP主要解决共通处理和目标组件之间解耦问题。
+
+ 1)AOP相关概念
+  *a.方面(Aspect)
+   指的是封装了共通处理的功能组件。该组件可以作用到某一批目标组件的方法上。
+
+  *b.切入点(Pointcut)
+  用于指定目标组件的表达式。指的是方面组件和哪一批目标组件方法有关系。
+
+  c.连接点(JoinPoint)
+  切入点是连接点的集合。指的是方面组件和具体哪一个目标组件的方法有关系。
+
+  *d.通知(Advice)
+  用于指定方面组件和目标组件方法之间的作用时机。例如先执行方面组件再执行目标方法；或先执行目标方法再执行方面组件。
+
+  e.目标(Target)
+  利用切入点指定的组件和方法。
+
+  f.动态代理(AutoProxy)
+  Spring采用了动态代理技术实现了AOP机制。
+  当使用AOP之后，从容器getBean()获取的目标组件，返回的是一个动态生成的代理类。然后通过代理类执行业务方法，代理类负责调用方面组件功能和原目标组件功能。
+  Spring提供了下面两种动态代理技术实现。
+  --采用CGLIB技术实现
+  （目标组件没有接口采用此方法）
+  public class 代理类 
+         extends 原目标类型{}
+CostAction action = new 代理类();
+
+  --采用JDK Proxy API实现
+  （目标组件有接口采用此方法）
+  public class 代理类 
+         implements 原目标接口{}
+CostDAO costDao = new 代理类();
+
+

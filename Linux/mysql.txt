@@ -1,0 +1,41 @@
+1 安装
+	yum -y install mysql-server 
+	
+	CentOS 7 版本将MySQL数据库软件从默认的程序列表中移除，用mariadb代替了。
+	yum install mariadb-server mariadb 
+	mariadb数据库的相关命令是：
+
+	systemctl start mariadb  #启动MariaDB
+
+	systemctl stop mariadb  #停止MariaDB
+
+	systemctl restart mariadb  #重启MariaDB
+
+	systemctl enable mariadb  #设置开机启动
+或者自己下载mysql：
+	wget http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
+	# rpm -ivh mysql-community-release-el7-5.noarch.rpm
+	# yum install -y mysql-community-server
+	
+	service mysqld restart
+	
+2 字符集配置
+	vim /etc/my.cnf
+	在mysqld节点下添加：
+		default-character-set=utf8
+		character-set-server=utf8
+	保存退出
+
+3 自启动配置
+	chkconfig mysqld on 
+	chkconfig --list mysqld (2-5都为on)
+	
+4 防火墙配置：
+	sudo vim /etc/sysconfig/iptables
+	添加：
+	-A INPUT -P tcp -m tcp --dport 3306 -j ACCEPT
+	保存退出
+	service iptables restart:重启防火墙
+5 启动：
+		service　mysqld start
+	

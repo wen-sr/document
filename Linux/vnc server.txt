@@ -1,0 +1,29 @@
+1 安装VNC server
+yum install tigervnc-server -y
+yum install -y vnc
+
+2 将vncserver 设置为随系统启动
+chkconfig vncserver on 
+或
+chkconfig vncserver --level 5 on 
+
+3 停用并禁用防火墙
+	systemctl stop firewalld.service
+	systemctl disable firewalld.service 
+
+4 vim /etc/sysconfig/vncservers
+或
+cp /etc/sysconfig/vncservers /lib/systemd/system/vncserver@:1.service 
+
+将<USER> 替换成 root
+
+5 更新systemctl 
+	systemctl daemon-roload
+6 设置vncserver的密码
+	vncpasswd root
+7启动vnc的1窗口服务
+	vncserver :1
+8 关闭
+	vncserver -kill :1 
+9 设置开机自动启动
+	systemctl enable vncserver@:1.service 

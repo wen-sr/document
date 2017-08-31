@@ -1,0 +1,7 @@
+$("p").html();
+
+$("p").html("<a href='http://www.baidu.com'>baidu</a>");
+
+
+$("p").text();
+$("p").text("<a href='http://www.baidu.com'>baidu</a>");

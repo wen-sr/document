@@ -1,0 +1,70 @@
+
+javascript object notation 
+1 数据交换：将数据转换成一种中间的与平台无关的数据格式（比如xml或者json字符串）发送给另外一方来处理
+
+2 轻量级：json相对应xml，所需要的数据大小要小的多，并且解析的速度要更快
+
+3 json语法（www.json.org）
+  a 表示一个对象
+    {属性名：属性值，属性名：属性值，。。。}
+    注意：属性名要使用引号括起来
+          属性值如果是字符串要用引号括起来
+	  属性值可以是string,number,boolean,null,object
+
+	  var obj = {'name':'zs','age':22};
+
+  b 表示一个对象组成的数组
+    [{},{},...]
+
+ var s = {name1:value,name2:value}  一个对象
+ var s = [{name1:value,name2:value},{name1:value,name2:value}]  一个数组
+
+
+
+mime media type(mime媒体类型)
+application/json
+
+
+
+4 如何使用json
+   1）将java对象转换成json字符串
+      一般使用json官方提供的api（json-lib）来实现转换，或者使用google开发的gson
+   2）json字符串转换成js对象
+      使用prototype提供evalJSON方法
+      prototype 是一个js文件，里面提供了很多常用的函数
+        a $(id):document.getElementById(id);
+	b $F(id);$(id).value;
+	c $(id1,id2,id3,...):分别依据Id1，id2。。查找对应的节点，然后放到一   个数组里面返回
+	d strip():除掉字符串两端的空格，相当与trim()(trim不通用，少用)
+	e evalJSON：将json字符串转换成对应的javascript对象或者js对象组成的   数组
+
+
+json is the x in ajax (json 可以替代xml)
+
+
+json 的数据类型：
+ object 
+ arrays
+ strings
+ numbers
+ booleans
+ null
+
+
+org.json 类库
+
+JSONObject 处理对象的类
+	构造方法传入一个json格式的字符串
+
+new JSONObject(str);
+JSONArray  处理数组的类
+	构造方法传入一个json格式的字符串，以 [ 开头，] 结尾
+
+
+
+
+google-gson 类库(java对象和json中间相互转换，支持泛型)
+
+Gson gson = new Gson();
+
+String s = gson.toJson(person);

@@ -1,0 +1,5 @@
+监听器类implements PreResultListener
+
+重写beforeResult方法
+
+监听器的执行时间：在action执行之后结果出来之前

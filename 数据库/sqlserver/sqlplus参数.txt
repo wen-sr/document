@@ -1,0 +1,15 @@
+1 一行最多字符
+set line 200;
+
+2  10行分页
+set pages 10;
+
+3 设置字符的长度
+set long 40000;
+
+4 输出从从spool 开始的所有记录
+spool /home/1.txt append
+spool OFF
+
+5 col value for 99999;(数字的位数)
+col name for a20;(字符的个数)

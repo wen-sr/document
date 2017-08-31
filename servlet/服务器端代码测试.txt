@@ -1,0 +1,4 @@
+服务器端代码的单元测试有两种模式：
+1 容器内测试（Jetty）
+
+2 Mock测试（继承HttpServletRequest、HttpSession、HttpServletResponse 等 Servlet API）

@@ -1,0 +1,46 @@
+1、检查点队列 checkpoint queue
+	rba
+	lrba
+	hrba
+	on disk rba
+2、ckpt进程
+	每隔3秒钟触发一次
+		记录检查点信息
+		触发DBWR进程
+
+3、增量检查点并不会去更新数据文件头，以及控制文件中数据库SCN以及数据文件条目的SCN信息，而只是每3秒由CKPT进程去更新控制文件中的low cache rba信息，也就是检查点的位置。
+
+select CPDRT,CPLRBA_SEQ||'.'||CPLRBA_BNO||'.'||CPLRBA_BOF "Low  
+RBA",CPODR_SEQ||'.'||CPODR_BNO||'.'||CPODR_BOF "On disk RBA",CPODS,CPODT,CPHBT from x$kcccp;
+
+CPDRT列是检查点队列中的脏块数目. 
+CPODS列是on disk rba的scn 
+CPODT列是on disk rba的时间戳 
+CPHBT列是心跳
+
+如果发生了实例崩溃，只需要在日志文件中找到检查点位置(low cache rba)，从此处开始应用所有的重做日志文件，就完成了前滚操作。实例崩溃后，再次启动数据库，oracle会到控制文件中读取low cache rba，这就是检查点位置。从此处开始应用重做日志，应用到on disk rba的位置。on disk rba是磁盘中重做日志文件的最后一条重做记录的rba。
+
+相关操作
+
+select checkpoint_change# from v$database
+
+alter system checkpoint
+
+alter system switch logfile
+
+select name,checkpoint_change# from v$datafile 
+
+
+select name,checkpoint_change# from v$datafile_header
+
+select * from v$log;
+
+begin
+for i in 1..10000 loop
+insert into  t2 values(1,'xkj');
+commit;
+end loop;
+end;
+select * from t2
+
+alter system flush buffer_cache

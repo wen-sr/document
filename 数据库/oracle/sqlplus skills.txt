@@ -1,0 +1,59 @@
+﻿1 show all
+显示所有配置信息
+
+2 常用的缓冲区命令
+	/:执行缓冲区的语句
+	l（小写的L）：list line_number，列出缓冲区带行号的语句
+	c/oldValue/newValue:指定新值修改缓冲区的值
+	a text：向缓冲区的语句中追加字符
+	del：删除缓冲区的语句
+	save file.sql:将缓冲区的语句保存到sql脚本
+	get file.sql:将sql脚本读入到缓冲区
+
+3 spool:屏幕转存
+	spool l.log [append]
+	select * from scott.emp;
+	spool off;
+
+4 @：运行脚本
+  @@为运行相对路径下的脚本，一般是在大脚本调用小脚本的时候使用
+
+5 clear screen:清屏
+
+6 设置字段长度
+	col name for a20;
+	col name clear;
+
+7 设置sqlplus的字符集
+export NLS_LANG=american_america.zhs16gbk 
+查看原数据库的字符集
+select * from nls_database_parameters;--nls_language_nls_territory.nls_charactory;
+修改exp（windows端的字符集），命令行或者修改注册表
+set nls_lang=AMERICAN_AMERICA.ZHS16GBK
+
+命令 缩写 作用 
+append 文本 A 文本 添加文本到当前行尾 
+change/旧文本/新文本 C/旧文本/新文本 在当前行用新的文本替换旧的文本 
+change/文本 C/文本 从当前行删除文本 
+del   删除当前行 
+del n   删除第n行 
+del n m   删除第n到m行 
+del n *   删除第n到当前行 
+del n last   删除第n行到最后一行 
+del *   删除当前行 
+Del * n   删除当前行到第n行 
+Del * last   删除当前行到最后一行 
+Del last   删除最后一行 
+input I 在当前行之后添加多行，input会提示输入每一行 
+input 文本 i 文本 在当前行之后添加一行 
+List L 显示缓冲区中所有行 
+List n L n 显示缓冲区中第n行 
+List n m L n m 显示缓冲区中第n到第m行 
+List n * L n * 显示缓冲区中第n行到当前行 
+List n last L n last 显示缓冲区中第n行到最后一行 
+List * L * 显示缓冲区中当前行 
+List * n L * n 显示缓冲区中当前行到第n行 
+List * last L * last 显示缓冲区中当前行到最后一行 
+List last L last 显示缓冲区中最后一行 
+Run R 显示并执行当前缓冲区的命令，并使缓冲区的最后一行成为当前行 
+/   执行当前缓冲区的命令，不显示缓冲区命令 	

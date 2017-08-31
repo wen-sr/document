@@ -1,0 +1,123 @@
+1 tar zxvf rlwrap....
+  cd rlwrap....
+  .configure && make && make install
+  which rlwarp 
+  
+2 cd 
+  unzip linux_11gR2_1..
+  unzip linux_11gR2_2..
+  ls -l
+  cd /
+  mkdir u01
+  groupadd oinstall -G dba -d /u01/oracle oracle
+  passwd oracle [oracle,oracle]
+  cd /u01
+  ls
+  ll
+  cd ..
+  cd u01
+  mv /u01/database/ .
+  ll
+  cd ..
+  chown -R oracle:oinstall /u01
+  su - oracle
+  ls -la
+
+
+3 vi .bash_profile
+
+  ORACLE_SID:wensr
+  ORACLE_BASE:/u01
+  ORACLE_HOME:$ORACLE_BASE/oracle
+
+  LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+  PATH=$ORACLE_HOME/bin:$PATH
+
+  DISPLAY=192.168.137.1:0.0
+
+  export ORACLE_SID ORACLE_BASE ORACLE_HOME LD_LIBRARY_PATH PATH DISPLAY
+    stty erase ^h
+    alias sqlplus="rlwrap sqlplus"
+    alias rman="ralwrap rman"
+
+  exit
+4 su - orale
+  env | grep ORA
+
+ //将缺的包找出来，传进去（linux 5）
+  rpm -qa | grep ....(过滤)
+   + pdksh 包
+ libaio-devel-0.3.106
+ sysstat-7.0.2
+ unixODBC-2.2.11
+ unixODBC-devel-2.2.11
+ +pdksh
+  //安装这些包
+  rpm -ivh *.rpm
+
+5 配置内核参数
+  检查内核 
+  uname -r(2.6.18-194.el5)
+
+在超级目录下
+ vi /etc/security/limits.conf
+(在end of file 后粘贴)
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+oracle soft stack 10240
+
+vi /etc/pam.d/login
+session require     pam_limits.so
+
+vi /etc/sysctl.conf 
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = 2097152
+kernel.shmmax = 4294967295
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048576
+
+
+立即生效
+sysctl -p
+
+su - oracle
+cd /u01/oracle
+ll
+env | grep DIS(DISPLAY=192.168.137.1:0.0)
+
+6 安装
+
+  新建一个连接，执行脚本的时候
+  Enter the full pathname of the local bin directory: [/usr/local/bin]
+  直接按回车
+
+  完成后点close，回到原来的连接直接按回车
+
+
+su - oracle 
+sqlplus /nolog
+conn /as sysdba
+select * from v$version;
+
+shutdown immediate
+
+7 安装examples
+ root 下 
+ unzip li....
+ mv examples/ /u01
+
+cd /u01
+chown -R oracle:oinstall examples/
+
+su - oracle
+cd /u01/examples
+./runInstaller
+

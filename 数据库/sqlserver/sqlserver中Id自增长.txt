@@ -1,0 +1,21 @@
+1 id numeric(11) identity primary key,
+
+2 仅当使用了列列表并且 IDENTITY_INSERT 为 ON 时，才能为表'admin_info'中的标识列指定显式值。
+  插入数据时，自增长列是系统自动处理，不需要你来指定数值，你也指定不了。只有将IDENTITY_INSERT 为 ON 时插入数据时，自增长列你才可以指定一个值
+比如我有一个表PZ,有如下列XH,ID,INX,KMID,FZZID,CODE ,JFJE,DFJE,RQ,ZY其中XH是自增长，正常插入数据时
+insert PZ (ID,INX,KMID,FZZID,CODE ,JFJE,DFJE,RQ,ZY) VALUES(......)不需要指定XH列。如果将IDENTITY_INSERT打开
+set IDENTITY_INSERT PZ ON 
+插入数据时就可以给XH列指定值
+INSERT PZ (XH,ID,INX,KMID,FZZID,CODE ,JFJE,DFJE,RQ,ZY) VALUES(指定表中没有的数值,24389,3,1524,1,'0109',0,0,'2011.1.29','JK')
+关闭IDENTITY_INSERT
+SET IDENTITY_INSERT PZ OFF
+
+3 SqlServer获取插入数据的自增列的值
+  1)、IDENT_CURRENT 返回为任何会话和任何作用域中的特定表最后生成的标识值。需要指定对应的表，
+      用法：select IDENT_CURRENT('表名')
+
+  2)、@@IDENTITY 返回为当前会话的所有作用域中的任何表最后生成的标识值。使用@@IDENTITY 的前提是在进行insert操作后，执行select @@identity的时候连接没有关闭，否则得到的将是NULL值。
+     用法：select @@IDENTITY
+
+  3)、SCOPE_IDENTITY 返回为当前会话和当前作用域中的任何表最后生成的标识值。一般在同一个存储过程、函数或批处理中，属于相同的作用域中，用此表示符。
+     用法：select SCOPE_IDENTITY

@@ -1,0 +1,16 @@
+$(function(){
+	$("#username").focus(function(){
+	var value = $(this).val();
+	if(value == this.defaultValue){
+		$this.val("");
+	}	
+	});
+	
+	$("#username").blur(function(){
+		var value = $(this).val();
+		if(value == ""){
+			$(this).val(this.defaultValue);
+		}
+	});
+
+});

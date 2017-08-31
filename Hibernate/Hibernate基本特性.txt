@@ -1,0 +1,92 @@
+﻿-----Hibernate基本特性-----
+1.对象持久性
+  在Hibernate使用过程中，实体对象可以具有以下三种状态。
+ a.临时状态
+   采用new关键字创建的对象，该对象未与Session发生关联
+ *b.持久状态
+   实体对象与Session发生关联。例如调用了session的get、load、save、update等方法。
+ 处于持久状态的对象具有以下特点：
+  --对象生命期持久，垃圾回收期不能回收。
+  --对象的数据可以与数据库同步，由Session对象负责管理和同步。
+  --对象在Session的一级缓存中存放
+==========================
+  当持久对象数据改变后，调用session.flush()方法，会与数据库同步更新。tx.commit()方法，内部也调用了flush(),因此使用commit()方法可以省略flush()调用。
+
+ c.游离状态
+  原来是持久状态，后来不受Session管理了。
+====批量操作注意及时清除缓存====
+tx = session.beginTransaction();
+for(int i=0;i<100000;i++){
+  Foo foo = new Foo();
+  //设置foo属性
+  session.save(foo);
+  //够50个对象，与数据库同步下，并清除缓存
+  if(i%50==0){
+    session.flush();//同步
+    session.clear();//清除缓存
+  }
+}
+tx.commit();
+====================
+2.一级缓存机制（默认启用）
+一级缓存被称为Session级别的缓存。
+每个Session都有自己独立的缓存区，该缓存区随着Session创建而开辟，随着Session.close()而释放。
+该缓存区可以存储当前Session关联的对象(持久对象)。
+ 一级缓存的好处：hibernate在查询时，先去缓存查找，如果缓存没有采取DB查询。如果利用Session对同一个对象查询多次，第一次去DB,后续会从缓存获取，从而减少了与DB的交互次数。
+ 管理一级缓存的方法如下：
+ session.evict(obj);//将obj清除
+ session.clear();//清除所有对象
+ session.close();//清除所有对象并关闭与数据库的连接。
+
+3.延迟记载机制
+  Hibernate在使用时，有些API操作是具有延迟加载机制的。
+延迟加载机制特点：当通过Hibernate的API获取一个对象结果后，该对象并没有数据库数据，当通过对象的getter方法获取属性值时才去数据库查询加载。
+  *a.具有延迟加载机制的操作如下：
+   --session.load查询
+   --query.iterator查询
+   --获取关联对象的属性信息
+  *b.常犯错误：
+LazyInitializationException: could not initialize proxy - no Session
+原因：代码中使用了延迟加载操作，但是session在加载数据前关闭了。
+  c.延迟加载原理
+  在使用延迟加载操作后，Hibernate返回的对象是Hibernate利用CGLIB技术新生的一个类型。在新类型中，将属性的getter方法重写。新生成类是原实体类的子类。
+ public class Foo$$EnhancerByCGLIB
+   extends Foo{
+  public String getName(){
+     //判断是否已加载过数据
+     //如果加载过，返回name值
+     //如果未加载，发送SQL查询加载数据，然后返回name值
+  }
+}
+
+javassist.jar/cglib.jar(生成新类型)-->载入类加载器-->执行
+  
+  *d.session的get和load方法的区别
+   两者都是按主键做条件查询。不同点有以下几个：
+  --get是立刻加载;load是延迟加载
+  --get返回的对象类型是实体类型;
+    load返回的是动态生成一个代理    类,该代理类是实体类的子类
+  --get未查到数据返回null;
+    load未查到数据抛出    ObjectNotFoundException异常
+   
+   e.延迟加载机制好处
+    --提高了内存的使用效率。
+    --可以数据访问降低并发量。
+
+
+4.综合练习
+案例：重构项目中的资费管理模块
+ 1）添加Hibernate开发框架
+  --jar包
+  --主配置hibernate.cfg.xml 
+ 2）采用Hibernate操作COST表
+  --实体类(利用现有的Entity)
+  --追加Cost.hbm.xml
+(注意：实体类和hbm.xml必须保持一致)
+ 3）按CostDAO接口重构一个DAO实现组件
+ 4）修改DAOFactory，将CostDAO采用Hibernate实现的DAO实例化
+ 5）测试资费模块功能
+   
+
+
+

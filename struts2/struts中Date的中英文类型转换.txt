@@ -1,0 +1,2 @@
+中文日期格式：yyyy-mm-dd
+英文日期格式：mm/dd/yyyy

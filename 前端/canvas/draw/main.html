@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>drawGraphics</title>
+	<script type="text/javascript" src="jquery.min.js"></script>
+</head>
+<body>
+	<div>
+	    <input type="file" id="files" style="display:none" onchange="importt();"/>
+	    <input type="button" id="import" value="导入"/>
+	    <input type="text" id="txtName">
+	</div>
+	<canvas id="canvas" style="border:1px solid #aaa;margin:2px" >
+    	当前浏览器不支持Canvas，请更换浏览器后再试
+	</canvas>
+	
+<script type="text/javascript">
+
+	$(function(){
+		//点击导入按钮，使files触发点击事件，然后完成读取文件的操作。
+		$("#import").click(function(){
+        	$("#files").click();
+    	});
+
+	});
+	 
+	function importt(){
+		//获取读取的File对象
+	    var selectedFile = document.getElementById("files").files[0];
+	    var reader = new FileReader();
+	    //读取文件的内容
+	    reader.readAsText(selectedFile);
+		//当读取完成之后会回调这个函数，然后此时文件的内容存储到了result中。
+	    reader.onload = function(){
+	        if(this.result != null){
+	        	//文件的所有数据按换行分割
+	        	var data = this.result.split("\r");
+	        	//第一行：名称
+		        var name = data[0];
+		        $("#txtName").val(name);
+		        // 第二行：颜色和画笔大小
+		        var colorAndSize = data[1];
+		        //第三行：x，y坐标的组合
+		        var xAndy = data[2];
+		        //将第二行按冒号分割
+		        var row2 = colorAndSize.split(":");
+		        //冒号前的部分作为颜色的组合
+		        var colors=row2[0];
+		        //将颜色的组合按逗号分割
+		        var color = colors.split(",");
+		        //得到颜色的RGB值
+		        var color_R = color[0];
+		        var color_G = color[1];
+		        var color_B = color[2];
+		        //得到画笔的大小值
+		        var size = row2[1];
+		        //xy坐标按tab键分割
+		        var xy = xAndy.split("\t");
+
+		        var x = new Array();
+				var y = new Array();
+				//将xy的值分别存入x，y数组中
+				for(var i = 0;i<xy.length;i++){
+					var x_y = xy[i].split(",");
+					x[i] = x_y[0];
+					y[i] = x_y[1];
+				}
+				//开始画图---------------------
+				var canvas = $("#canvas")[0];
+
+		        canvas.width = 1600;
+		        canvas.height = 800;
+
+		        var context = canvas.getContext("2d");
+		        //绘制圆形的结束线帽
+		        context.lineCap="round";
+		        //当两条线条交汇时，创建圆形边角
+		        context.lineJoin="round";
+		        //左边绿色图形开始-------------------------------------
+		        context.beginPath();
+		        context.moveTo( x[0] , y[0] );
+		        for(var i = 1;i<x.length;i++){
+		        	context.lineTo(x[i], y[i]);
+		        }
+		        context.lineWidth = size;
+		        context.strokeStyle = "rgb("+ color_R +","+ color_G + "," + color_B +")";
+		        context.stroke();
+		        //左边绿色图形结束-------------------------------------
+
+		        //左边黑色直线图形开始-------------------------------------
+		        context.beginPath();
+		        context.moveTo( x[0] , y[0] );
+		        for(var i = 1;i<x.length;i++){
+		        	context.lineTo(x[i], y[i]);
+		        }
+		        context.lineWidth = 1;
+		        context.strokeStyle = "#333";
+		        context.stroke();
+				//左边黑色直线图形结束-------------------------------------
+				//右边绿色图形开始-------------------------------------
+				context.beginPath();
+		        context.moveTo( parseInt(x[0])+100, y[0] );
+		        for(var i = 1;i<x.length;i++){
+		        	context.lineTo(parseInt(x[i])+100, y[i]);
+		        }
+		        context.lineWidth = size;
+		        context.strokeStyle = "rgb("+ color_R +","+ color_G + "," + color_B +")";
+		        context.stroke();
+				//右边绿色图形结束-------------------------------------
+				//右边黑叉图形开始-------------------------------------
+				context.lineWidth = 1;
+		        context.strokeStyle = "#333";
+		        for(var i = 1;i<x.length;i++){
+		        	context.beginPath();
+		        	context.moveTo(parseInt(x[i])+100-2, parseInt(y[i])-2);
+		        	context.lineTo(parseInt(x[i])+100+2, parseInt(y[i])+2);
+		        	context.stroke();
+		        	context.beginPath();
+		        	context.moveTo(parseInt(x[i])+100+2, parseInt(y[i])-2);
+		        	context.lineTo(parseInt(x[i])+100-2, parseInt(y[i])+2);
+		        	context.stroke();
+		        }
+		        //右边黑叉图形结束-------------------------------------
+				
+	        }else{
+	        	alert("文件内容有误或无内容");
+	        }
+	        
+	    };
+}
+
+</script>
+</body>
+
+
+</html>

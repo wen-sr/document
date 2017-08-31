@@ -1,0 +1,62 @@
+1 hide方法 show方法
+	显示与隐藏切换toggle方法
+2 下拉动画:slideDown：$("#a1").slideDown(3000,function(){alert('动画执行结束')});
+	上卷动画slideUp:$("#a2").slideUp(3000,function(){alert('动画执行结束')});
+	上卷下拉切换slideToggle:$("#a2").slideToggle(3000,function(){alert('动画执行结束')});
+	
+3 淡出动画：fadeOut：$("p").fadeOut(2000, function() {alert("隐藏完毕!")});
+	淡入动画fadeIn：$("p").fadeIn(2000, function() {alert("隐藏完毕!")});
+	淡入淡出切换fadeToggle
+	淡入效果fadeTo： $("p").fadeTo(1000, 0.2);
+	
+	注：淡入淡出fadeIn与fadeOut都是修改元素样式的opacity属性，但是他们都有个共同的特点，变化的区间要么是0，要么是1
+	让元素保持动画效果，修改opacity值
+	
+	
+	注：toggle、sildeToggle以及fadeToggle的区别：
+	toggle：切换显示与隐藏效果
+	sildeToggle：切换上下拉卷滚效果
+	fadeToggle：切换淡入淡出效果
+	
+4 动画animate：animate()方法允许我们在任意的数值的CSS属性上创建动画	
+	除了定义数值，每个属性能使用'show', 'hide', 和 'toggle'
+	+= 或 -=开始的值，那么目标值就是以这个属性的当前值加上或者减去给定的数字来计算的
+	如果多个元素执行动画，回调将在每个匹配的元素上执行一次，不是作为整个动画执行一次
+	.animate({
+		left: 50, 
+		top: '+=50px'
+		width: '50px'   
+		opacity: 'show',  
+		fontSize: "10em",
+	}, 500,function(){
+	});
+	第二种语法：
+	//观察每一次动画的改变
+	$aaron.animate({
+		height: '50'
+	}, {
+		duration :2000,
+		//每一个动画都会调用
+		step: function(now, fx) {
+		   $aaron.text('高度的改变值:'+now)
+		}
+	});
+	//观察每一次进度的变化
+	$aaron.animate({
+		height: '50'
+	}, {
+		duration :2000,
+		//每一步动画完成后调用的一个函数，
+		//无论动画属性有多少，每个动画元素都执行单独的函数
+		progress: function(now, fx) {
+		   $aaron.text('进度:'+arguments[1]);
+		}
+	});
+	
+5 停止动画stop
+	stop()：只会停止第一个动画，第二个第三个继续
+	stop(true)：停止第一个、第二个和第三个动画
+	stop(true ture)：停止动画，直接跳到第一个动画的最终状态 
+	
+	
+	

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:tx="http://www.springframework.org/schema/tx" 
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:jee="http://www.springframework.org/schema/jee"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd">
+
+	<bean id="jdbcCostDAO" scope="singleton"
+		lazy-init="true" init-method="myinit"
+		destroy-method="mydestroy"
+		class="org.tarena.dao.JdbcCostDAO">
+	</bean>
+	
+	<bean id="hibernateCostDAO" 
+		class="org.tarena.dao.HibernateCostDAO">
+	</bean>
+
+	<bean id="costAction" scope="prototype"
+		class="org.tarena.action.CostAction">
+		<!-- 利用setCostDao方法接收jdbcCostDAO对象 -->
+		<property name="costDao" ref="hibernateCostDAO">
+		</property>
+	</bean>
+	
+	<bean id="deleteAction" scope="prototype"
+		class="org.tarena.action.DeleteAction">
+		<!-- 采用构造方式注入,
+		给第一个参数注入一个jdbcCostDAO对象 -->
+		<constructor-arg index="0" 
+			ref="jdbcCostDAO">
+		</constructor-arg>
+	</bean>
+	
+	<!-- 各种类型数据的注入 -->
+	<bean id="messageBean" 
+		class="org.tarena.dao.MessageBean">
+		<property name="name" value="scott">
+		</property>
+		<property name="dir" value="C:\\images">
+		</property>
+		<property name="types" value="jpg,gif,jpeg">
+		</property>
+		<property name="hbms">
+			<list>
+				<value>/org/tarena/entity/Cost.hbm.xml</value>
+				<value>/org/tarena/entity/Admin.hbm.xml</value>
+				<value>/org/tarena/entity/Role.hbm.xml</value>
+			</list>
+		</property>
+		<property name="cities">
+			<set>
+				<value>北京</value>
+				<value>上海</value>
+				<value>深圳</value>
+			</set>
+		</property>
+		<property name="books">
+			<map>
+				<entry key="1" value="Java语言基础">
+				</entry>
+				<entry key="2" value="Java Web入门">
+				</entry>
+				<entry key="3" value="SSH框架使用">
+				</entry>
+			</map>
+		</property>
+		<property name="props">
+			<props>
+				<prop key="hibernte.show_sql">
+				 true
+				</prop>
+				<prop key="hibernte.format_sql">
+				 true
+				</prop>
+				<prop key="hibernte.dialect">
+				 org.hibernate.dialect.OracleDialect
+				</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- AOP记录操作日志案例 -->
+<bean id="loggerBean" 
+	class="org.tarena.aop.LoggerBean">
+</bean>
+<aop:config>
+	<!-- 定义切入点，用于指定目标组件和方法 -->
+	<aop:pointcut id="actionPointcut" 
+		expression="within(org.tarena.action.*)"/>
+	<!-- 定义方面，将loggerBean对象指定为方面组件 -->
+	<aop:aspect id="loggerAspect" ref="loggerBean">
+		<!-- 定义通知，指定先执行方面组件的logger方法，
+		再执行切入点指定的目标方法 -->
+		<aop:before pointcut-ref="actionPointcut" 
+			method="logger"/>
+	</aop:aspect>
+</aop:config>
+
+
+
+
+
+
+
+
+
+
+
+
+</beans>

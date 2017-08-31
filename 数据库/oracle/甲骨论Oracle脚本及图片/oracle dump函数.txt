@@ -1,0 +1,20 @@
+DUMP(expr[,return_fmt[,start_position[,length]]])
+
+Purpose
+
+DUMP returns a VARCHAR2 value containing the datatype code, length in bytes, and internal representation of expr. The returned result is always in the database character set. 
+
+The argument return_fmt specifies the format of the return value and can have any of the following values:
+
+8 returns result in octal notation. 
+10 returns result in decimal notation. 
+16 returns result in hexadecimal notation. 
+17 returns result as single characters. 
+
+By default, the return value contains no character set information. To retrieve the character set name of expr, specify any of the preceding format values, plus 1000. For example, a return_fmt of 1008 returns the result in octal, plus provides the character set name of expr.
+eg.
+DUMP('ABC', 1016)
+--------------------------------------------
+Typ=96 Len=3 CharacterSet=ZHS16GBK: 61,62,63
+
+The arguments start_position and length combine to determine which portion of the internal representation to return. The default is to return the entire internal representation in decimal notation.

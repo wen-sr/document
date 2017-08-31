@@ -1,0 +1,80 @@
+1、PGA作用
+2、PGA构成
+	1）private SQL area
+
+	2）Session Memory
+
+	（hold a session’s variables (logon information) and other information related to the session.）
+
+	3）SQL Work Areas
+
+3、PGA管理方式
+4、Dedicated Server、Shared Server
+5、重要参数
+	PGA_AGGREGATE_TARGET
+在OLTP系统中，典型PGA内存设置应该是总内存的较小部分（例如20％），剩下80％分配给SGA。 
+OLTP：PGA_AGGREGATE_TARGET = (total_mem * 80%) * 20% 
+在DSS系统中，由于会运行一些很大的查询，典型的PGA内存最多分配70％的内存。
+DSS：PGA_AGGREGATE_TARGET = (total_mem * 80%) * 50% 
+SQL> alter system set workarea_size_policy=auto scope=both;
+SQL> alter system set pga_aggregate_target=512m scope=both;
+
+	WORKAREA_SIZE_POLICY
+		sort_area_size
+		sort_area_retained_size
+		hash_area_size
+		hash_join_enable
+		bitmap_merge_area_size
+		create_bitmap_area_size
+		open_cursors
+		_pga_max_size
+select ksppinm "Name", ksppstvl/1024/1024 ||'M' "Value", ksppdesc "Desc" 
+from x$ksppi x, x$ksppcv y 
+where x.indx = y.indx and ksppinm ='_pga_max_size';
+
+6、重要试图
+V$PGASTA
+SELECT * FROM V$PGASTAT; 
+	
+V$PGA_TARGET_ADVICE
+Select pga_target_for_estimate/1024/1024 ||'M' "Estimate PGA Target"
+       ,estd_pga_cache_hit_percentage "Cache Hit(%)"
+       ,estd_extra_bytes_rw/1024/1024 ||'M' "Extra Read/Write"
+       ,estd_overalloc_count "Over alloc count"
+From v$pga_target_advice
+
+select (p.PGA_TARGET_FOR_ESTIMATE)/1024/1024,p.ESTD_PGA_CACHE_HIT_PERCENTAGE
+from v$pga_target_advice p
+where p.ESTD_PGA_CACHE_HIT_PERCENTAGE>95;
+
+SELECT round(PGA_TARGET_FOR_ESTIMATE/1024/1024) target_mb, 
+   ESTD_PGA_CACHE_HIT_PERCENTAGE cache_hit_perc, 
+   ESTD_OVERALLOC_COUNT
+   FROM v$pga_target_advice;
+
+
+V$SYSSTAT 、V$SESSTAT 
+select * from V$SYSSTAT
+where name like '%sort%'; 
+
+select name,value from v$statname a,v$mystat b where a.statistic#=b.statistic# and a.name like '%pga%';
+
+V$SQL_WORKAREA
+V$SQL_WORKAREA_ACTIVE
+V$PROCESS
+select spid,program,pga_max_mem,pga_alloc_mem,pga_used_mem,pga_freeable_mem
+from v$process
+where spid in (select spid from v$process where addr in 
+(select paddr from v$session where sid in (select distinct sid from v$mystat)));
+
+select spid,program,pga_max_mem,pga_alloc_mem,pga_used_mem,pga_freeable_mem
+from v$process where PROGRAM like '%jiagulun%'
+
+--查看PGA各个区域使用情况
+select p.PROGRAM,p.SPID,pm.CATEGORY,pm.ALLOCATED,pm.USED,pm.MAX_ALLOCATED
+from v$process p,v$process_memory pm
+where p.PID=pm.PID
+and p.SPID in (select spid from v$process where addr in
+(select paddr from v$session where sid in
+(select distinct sid from v$mystat )
+));

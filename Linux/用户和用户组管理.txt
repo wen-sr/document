@@ -1,0 +1,20 @@
+Cat /etc/passwd :查看所有用户信息
+Cat /etc/shadow:查看影子文件
+
+Passwd ： 创建密码
+Usrdel bbb:删除用户
+Userdel -r uuu ：删除账户及宿主目录
+Usermod -L username ：禁用账户
+Usermod -U username：恢复用户
+Passwd -l username：禁用密码
+Passwd -u username: 回复禁用密码
+
+
+Cat /etc/group:查看组信息
+
+
+useradd -g oinstall -G dba oracle
+passwd Oracle（修改Oracle的密码）
+mkdir -p /u01/app/oracle
+chown -R oracle:oinstall /u01/app
+chmod -R 755 /u01/app

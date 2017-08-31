@@ -1,0 +1,8 @@
+24-Aug-2017 18:35:18.602 警告 [localhost-startStop-2] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc The web application [ROOT] registered the JDBC driver [com.mysql.jdbc.Driver] but failed to unregister it when the web application was stopped. To prevent a memory leak, the JDBC Driver has been forcibly unregistered.
+
+应用程序注册了JDBC驱动，但当程序停止时无法注销这个驱动，tomcat为了防止内存溢出，就给强制注销了
+由于JDBC连接池用的是dbcp，dbcp1.3/1.4连接池没有自动的去回收空闲连接的功能,在1.3.1、1.4.1版本做了修复 (可以替换成新版本试试，亦可以按以下方案重写，也可以考虑使用c3p0，它有自动回收空闲连接功能）
+
+
+
+24-Aug-2017 18:35:18.603 警告 [localhost-startStop-2] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [ROOT] appears to have started a thread named [MySQL Statement Cancellation Timer] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:

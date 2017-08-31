@@ -1,0 +1,33 @@
+对于 Query 接口的list()方法与iterator()方法来说，都可以实现获取查询的对象，但是list()方法返回的每个对象都是完整的（对象中的每个属性都被表中的字段填充上了），而iterator()方法返回的对象仅包含了主键值（标识符），只有当你对iterator（）中的对象进行操作时，Hibernate才会向数据库再次发送SQL语句来获取该对象的属性值
+
+一对多映射
+  <class name="Customer" table="costomer">
+	<id name="id" column="id" type="long">
+		<generator class="increment"></>
+	</id>
+	<property name="name" type="string">
+		<colum name="customer_name" length="50"></>
+	</>
+	<set name="orders" cascade="save-update" inverse="true">//有多的一方来维护关联关系
+		<key column="customer_id"></>//外键
+		<one-to-many class="order"/>//表示orders这个集合的元素是order类型的
+	</set>
+  </class>
+
+多对一映射
+  <class name="Orders" table="orders">
+	<id name="id" column="id" type="long">
+		<generator class="increment"></>
+	</id>
+	<property name="name" type="string">
+		<colum name="" length=""></>
+	</>
+	<many-to-one name="customer" class="Customer" column="customer_id">//外键
+	</>
+  </class>
+	
+  
+
+Hibernate 中的延迟加载（lazy loading），当我们在程序中获取到了一的一方，但是不需要多的一方，那么使用延迟加载就非常适合
+在 hbm 文件中，配置 class 内的属性加上 lazy="false",或者在session关闭之前使用一次多的一方的对象
+

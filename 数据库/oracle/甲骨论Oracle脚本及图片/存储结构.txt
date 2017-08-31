@@ -1,0 +1,173 @@
+1、Oracle文件结构
+	所有文件
+2、数据库、表空间、段、区、块
+3、Oracle表空间
+	普通表空间
+	回滚表空间
+	临时表空间
+4、Oracle段
+	表段、表分区段、索引段、索引分区段、临时段、撤销段、二进制大对象段
+5、Oracle区
+	高水位线
+6、Oracle块
+	Oracle块
+		Oracle块物理存储结构
+		行链接
+		行迁移
+	文件系统块：dumpe2fs /dev/sda1
+	扇区：512字节
+
+通过EM来演示区和段的管理方式
+7、区管理方式
+	数据字典
+	本地
+		自动
+		统一
+8、段管理方式
+	手工管理方式
+	自动管理方式
+
+CREATE SMALLFILE TABLESPACE "DATA1" 
+DATAFILE '/u01/app/oracle/oradata/jiagulun/data1_01.dbf' SIZE 100M REUSE 
+AUTOEXTEND ON NEXT 100M MAXSIZE UNLIMITED 
+LOGGING 
+EXTENT MANAGEMENT LOCAL 
+SEGMENT SPACE MANAGEMENT AUTO 
+
+ 
+
+
+select segment_name,blocks,extents,bytes,segment_type,tablespace_name from
+dba_segments where segment_name='T2';
+select blocks,empty_blocks from dba_tables where table_name = 'T2';
+
+
+附录：
+analyze table tablename compute statistics;
+analyze table tablename compute statistics for all indexes;
+analyze table tablename delete statistics 
+
+DBMS_STATS 包里的statistics 过程：
+
+GATHER_INDEX_STATS
+ Index statistics
+ 
+GATHER_TABLE_STATS
+ Table, column, and index statistics
+
+exec dbms_stats.gather_table_stats('SYS','T2');
+ 
+GATHER_SCHEMA_STATS
+ Statistics for all objects in a schema
+ 
+GATHER_DICTIONARY_STATS
+ Statistics for all dictionary objects
+ 
+GATHER_DATABASE_STATS
+ Statistics for all objects in a database
+
+DBA_TABLES
+DBA_OBJECT_TABLES
+DBA_TAB_STATISTICS
+DBA_TAB_COL_STATISTICS
+DBA_TAB_HISTOGRAMS
+DBA_INDEXES
+DBA_IND_STATISTICS
+DBA_CLUSTERS
+DBA_TAB_PARTITIONS
+DBA_TAB_SUBPARTITIONS
+DBA_IND_PARTITIONS
+DBA_IND_SUBPARTITIONS
+DBA_PART_COL_STATISTICS
+DBA_PART_HISTOGRAMS
+DBA_SUBPART_COL_STATISTICS
+DBA_SUBPART_HISTOGRAMS
+
+表的统计信息：
+包含表行数，使用的块数，空的块数，块的使用率，行迁移和链接的数量，pctfree，pctused的数据，行的平均大小：
+ 
+SELECT table_name,NUM_ROWS, --表中的记录数
+BLOCKS, --表中数据所占的数据块数
+EMPTY_BLOCKS, --表中的空块数
+AVG_SPACE, --数据块中平均的使用空间
+CHAIN_CNT, --表中行连接和行迁移的数量
+AVG_ROW_LEN --每条记录的平均长度
+FROM USER_TABLES where table_name='T2'
+
+索引列的统计信息   
+包含索引的深度（B-Tree的级别），索引叶级的块数量，集群因子（clustering_factor), 唯一值的个数。
+
+SELECT BLEVEL, --索引的层数
+    LEAF_BLOCKS, --叶子结点的个数
+    DISTINCT_KEYS, --唯一值的个数
+    AVG_LEAF_BLOCKS_PER_KEY, --每个KEY的平均叶块个数 
+    AVG_DATA_BLOCKS_PER_KEY, --每个KEY的平均数据块个数
+    CLUSTERING_FACTOR --群集因子
+FROM USER_INDEXES
+
+列的统计信息  
+包含 唯一的值个数，列最大小值，密度（选择率），数据分布（直方图信息），NUll值个数
+
+SELECT NUM_DISTINCT, --唯一值的个数
+    LOW_VALUE, --列上的最小值
+    HIGH_VALUE, --列上的最大值
+    DENSITY, --选择率因子（密度）
+    NUM_NULLS, --空值的个数
+    NUM_BUCKETS, --直方图的BUCKET个数
+    HISTOGRAM --直方图的类型
+FROM USER_TAB_COLUMNS
+
+相关视图
+1.V$TABLESPACE
+2.V$ENCRYPTED_TABLESPACES
+3.DBA_TABLESPACES,DBA_ USER_TABLESPACES
+4.DBA_TABLESPACE_GROUPS
+5.DBA_SEGMENTS, USER_SEGMENTS
+6.DBA_EXTENTS, USER_EXTENTS
+7.DBA_FREE_SPACE, USER_FREE_SPACE
+8.DBA_TEMP_FREE_SPACE
+9.V$DATAFILE
+10.V$TEMPFILE
+11.DBA_DATA_FILES
+12.DBA_TEMP_FILES
+13.V$TEMP_EXTENT_MAP
+14.V$TEMP_EXTENT_POOL
+15.V$TEMP_SPACE_HEADER
+16.DBA_USERS
+17.DBA_TS_QUOTAS
+18.V$SORT_SEGMENT
+19.V$TEMPSEG_USAGE
+20.V$SEGSTAT_NAME、V$SEGSTAT、V$SEGMENT_STATISTICS
+
+
+SQL可以帮助我们找到当前数据库中逻辑读最高的10个对象
+select * 
+from (select object_name, statistic_name, value
+	from V$SEGMENT_STATISTICS
+where statistic_name = 'logical reads'
+order by 3 desc)
+where rownum < 11;
+
+
+select * from dba_extents where segment_name='T2'
+begin
+for i in 1..100000 loop
+insert into t2 values (1,'1234567890');
+commit;
+end loop;
+end;
+
+
+create table block_test
+(id varchar2(4) primary key,name varchar2(20))
+tablespace test;
+
+insert into block_test values ('0001','TOM');
+commit;
+
+select id,name,rowid from block_test;
+
+select dbms_rowid.rowid_relative_fno('AAAGF2AAIAAAAnbAAA') file_num,
+dbms_rowid.rowid_block_number('AAAGF2AAIAAAAnbAAA') block_num from dual;
+
+alter system dump datafile 8 block 2523;

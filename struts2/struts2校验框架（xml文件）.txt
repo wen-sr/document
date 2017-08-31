@@ -1,0 +1,63 @@
+actionname-validation.xml   比如：RegisterAction-validation.xml
+
+
+
+在struts2提供的apps中找到类似的校验xml文件，拷贝其中的dtd声明
+
+分为字段优先校验器和校验器优先校验器
+
+字段优先
+<validators>
+	<field name="username"(成员变量的名字)>//要校验的属性
+		<field-validator type="requiredstring（必填的）">//校验规则
+			<message>username can't be blank</message>
+		</field-validator>
+		<field-validator type="stringlength">
+			<param name="minLength">4</param>
+			<param name="maxLength">6</param>
+			<message>length(错误信息) between ${minLength} and ${maxLength}</message>
+		</field-validator>
+	</field>
+	<field name="age">
+		<field-validator type="int">
+			<param name="min">10</param>
+			<param name="max">50</param>
+			<message>age between ${min} and ${max}</message>
+		</field-validator>
+	</field>
+</validators>
+
+在xwork-core下 com.opensymphony.xwork2.validator.validators.default.xml
+找到那些验证的属性名字
+
+
+通过message的key属性来指定属性文件的信息实现外部控制错误信息和国际化
+
+
+校验器优先的校验
+<validators>
+	<validator type="requiredstring">
+		<param name="fieldName">username</>
+		<message>username cant be blank</>
+	</validator>
+	<validator>
+		
+	</validator type="stringlength">
+		<param name="fieldName">username</>
+		<param name="minLength">4</>
+		<param name="maxLength">6</>
+		<message>...</>
+	</validators>
+
+
+
+struts2校验框架执行顺序：
+1 首先执行校验框架（xml文件）
+2 执行自定义方法的校验方法
+3 执行默认的校验方法
+
+
+
+更推荐使用编写validate方法，更灵活
+
+

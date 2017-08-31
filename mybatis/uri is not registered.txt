@@ -1,0 +1,2 @@
+复制出现红色字体的路径。。。
+File -  Settings  - schemas and DtDs 

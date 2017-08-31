@@ -1,0 +1,56 @@
+mkdir -p /a/b/c
+
+Touch 创建空文件或更新文件时间 
+Touch -d 20160101 dm.txt 指定文件dm.txt的修改时间
+
+Cat  more /etc/services
+Cat a.txt > b.txt
+Cat a.txt >> b.txt 追加
+
+
+Less 逐行查看，可上下翻页
+
+Df 查看磁盘容量使用情况（默认以k显示，加入参数-h将用MB，GB显示）
+Du 查看文件大小（-h同上）
+
+
+
+Head 显示文件开头部分内容（默认十行）head -200 /etc/services
+Tail 显示文件结尾部分内容tail +200 /etc/services 从第200行到末尾的信息
+tail -200 倒数200行信息
+
+
+Find：find / -name dm.txt  在/下按name查找dm.txt文件
+find . -ftype f  按文件类型在当前目录下查找
+find . -ctime -20 20分钟内更新过的文件
+
+Grep ext3 dm.txt 在dm.txt下过滤含有ext3的行
+
+文件权限
+R=4，w=2 ，x = 1
+
+Rw-		r--		 r--
+U  		G  		O 
+
+
+ll显示：
+类型权限    文件数 所有者 所有组  大小   创建时间   文件名	
+
+修改权限
+改变文件权限：只有文件的拥有者和root才能修改文件的权限
+Chmod u+x install.log:为install.log加上x权限（减去-）
+Chmod g+w install.log：为install.log所在群组加上写权限
+
+Chmod u=rwx install.log ：为拥有者修改权限
+
+Chmod 644 install.log ：修改install.log的权限为644
+
+Chmod -R 777 test ：修改test目录及其内的所有文件的权限
+
+Chmod a+r install.log 设置为所有人皆可读
+
+
+Chown oracle:oinstall install.log
+Chown -R oracle:oinstall test
+
+

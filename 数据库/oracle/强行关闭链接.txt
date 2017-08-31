@@ -1,0 +1,4 @@
+首先查找目标用户的当前进程,注意是serial#
+ 
+select sid,serial# from v$session where username='WH1';
+alter system kill session 'sid,serial';

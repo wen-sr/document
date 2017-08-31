@@ -1,0 +1,17 @@
+﻿
+fdisk -l:查看新的磁盘
+
+fdisk /dev/sdb
+m(帮助)->n(新建分区)->w(保存分区)
+
+mkfs.ext3 -f /dev/sdb1：格式化分区sdb1，建立文件系统
+
+mount /dev/sdb1 /home/data/：将建好的分区sdb1挂载到/home/data目录下
+
+df -TH /home/data/：检查是否挂载成功
+
+修改一下系统配置加入下列行到/etc/fstab，让系统启动后自动挂载
+vi /etc/fstab
+/dev/sdb1  /home/data xfs  defaults  0  0
+
+删除分区：fdisk /dev/sdb—>d—>输入分区号—>w(写入系统分区表)

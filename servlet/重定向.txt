@@ -1,0 +1,9 @@
+response.sendRedirect("login.jsp?username=""+ username + "&password="+password);
+
+<% String error = request.getParameter("username");%>
+
+
+
+
+
+

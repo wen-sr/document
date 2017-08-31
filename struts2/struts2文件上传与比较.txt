@@ -1,0 +1,30 @@
+jsp的文件上传：
+对表单属性的要求：
+1 method 必须为post
+2 enctype="multipart/form-data"
+
+
+action="result.jsp"
+username:<input type="text" name="username"><br>
+file:<input type="file" name="file"><br>
+<input type="submit" value="submit">
+
+
+在result.jsp页面
+
+
+<%
+InputStream is = request.getInputStream();
+
+BufferedReader br = new BufferedReader(new InputStreamReader(is));
+String buffer = null;
+
+while(null!=(buffer=br.readLine())){
+
+	out.print(buffer+"<br>");
+}
+
+br.close();
+is.close();
+
+%>

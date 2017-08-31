@@ -1,0 +1,17 @@
+﻿该工具用来检测数据文件或segment是否有坏块
+1 检查数据文件
+[oracle@redhat5 archDemo]$ dbv file=example01.dbf logfile=/tmp/example.dbv feedback=100
+或者不要写入日志文件，将结果直接打印在屏幕上
+dbv file=example01.dbf feedback=100
+
+2 检查segment
+select segment_name,tablespace_id,header_file,header_block from sys_dba_segs where owner='SCOTT';
+SEGMENT_NAME	     TABLESPACE_ID HEADER_FILE HEADER_BLOCK
+-------------------- ------------- ----------- ------------
+DEPT				 4	     4		130
+EMP				 4	     4		146
+SALGRADE			 4	     4		162
+PK_DEPT 			 4	     4		138
+PK_EMP				 4	     4		154
+
+[oracle@redhat5 archDemo]$ dbv userid=system/oracle segment_id=4.4.146

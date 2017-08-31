@@ -1,0 +1,19 @@
+容器启动的时候，会为每一个应用创建唯一的一个符合ServletContext接口要求的对象（Servlet上下文），该对象会一直存在，除非容器关闭
+
+
+如何获得Servlet上下文
+  1 GenericServlet.getServletContext();
+  2 HttpSession.getServletContext();
+  3 ServletConfig.getServletcontext();
+  4 FilterConfig.getServletContext();
+
+上下文的使用
+  1 绑定数据 setAttribute     get....    remove....
+     request,session,servletContext都提供了绑定数据的三个方法，如过都满足使用条件，应该优先使用生命周期短的（生命周期：request<session<servletContext）
+
+     request 对象绑定的数据只有同一个请求所涉及的各个web组件可以共享
+     session对象绑定的数据是同一个会话所涉及的各个web组件可以共享（同一个用户）
+     servletContext对象绑定的数据是公开的，谁都可以访问，而且随时访问
+
+  2 访问全局的初始化参数
+  3 

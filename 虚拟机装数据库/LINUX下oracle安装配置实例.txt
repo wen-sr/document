@@ -1,0 +1,235 @@
+unzip linux_11gR2_database_1of2.zip
+unzip linux_11gR2_database_1of2.zip
+
+
+检查开发包
+
+rpm -qa|grep 名字
+
+binutils-2.17.50.0.6
+compat-libstdc++-33-3.2.3
+elfutils-libelf-0.125
+elfutils-libelf-devel-0.125
+elfutils-libelf-devel-static-0.125
+gcc-4.1.2
+gcc-c++-4.1.2
+glibc-2.5-24
+glibc-common-2.5
+glibc-devel-2.5
+glibc-headers-2.6.18
+ksh-20060214
+libaio-0.3.106
+libaio-devel-03.106
+libgcc-4.1.2
+libgomp-4.1.2
+libstdc++-4.1.2
+libstdc++-devel-4.1.2
+make-381
+numactl-devel-0.9.8.i386
+sysstat-7.0.2
+unixodbc-2.2.11
+unixodbc-devel-2.2.11
+
+
+groupadd oinstall
+groupadd dba
+
+cd /
+mkdir -p /u01/oracle 
+useradd -g oinstall -G dba -d /u01/oracle oracle
+
+
+cp /etc/skel/.bash_profile /u01/oracle
+
+cp /etc/skel/.bashrc /u01/oracle
+
+cp /etc/skel/.bash_logout /u01/oracle
+
+passwd oracle
+
+cd /
+  
+ls -l
+ 
+查看 u01 权限
+ 
+chown -R oracle:oinstall u01 
+
+ls -l
+
+vi /etc/sysctl.conf
+
+fs.aio-max-nr =1048576
+fs.file-max =6815744
+kernel.shmall=2097152
+kernel.shmmax=536870912
+kernel.shmmni=4096
+kernel.sem=250 32000 100 128
+net.ipv4.ip_local_port_range =9000 65500
+net.core.rmem_default=262144
+net.core.rmem_max=4194304
+net.core.wmem_default =262144
+net.core.wmem_max =1048586
+
+sysctl -p
+
+vi /etc/security/limits.conf
+
+ 
+oracle    soft   nproc    2047
+oracle    hard   nproc    16384
+oracle    soft   nofile   1024
+oracle    hard   nofile   65536
+
+
+vi /etc/pam.d/login
+
+session    require   pam_limits.so
+
+
+
+
+su  oracle
+
+cd ~
+
+pwd
+  
+
+ls -la
+
+
+vi .bash_profile
+
+ORACLE_BASE=/u01
+ORACLE_HOME=$ORACLE_BASE/oracle
+ORACLE_SID=wilson
+PATH=$ORACLE_HOME/bin:$PATH:$HOME/bin 
+
+export ORACLE_BASE ORACLE_HOME ORACLE_SID PATH
+
+===========================================================
+mv database /u01/
+cd /u01
+ls -l
+chown -R  oracle:oinstall database/
+
+
+
+在centos上安装软件时出现Could not execute auto check for display colors using command
+ 
+ 
+ 
+Two solutions:
+ 
+ 
+ 
+1.use oracle login x-window, then ./runInstaller
+ 
+ 
+ 
+2.use root login,then
+ 
+#xhost +
+ 
+#su - oracle
+ 
+#./runInstaller
+ 
+ 
+
+
+安装到 Create Inventory
+ 
+mkdir /oraInventory
+chown -R oracle:oinstall oraInventory
+
+install product
+
+   安装完毕，提示执行2个脚本
+
+/oraInventory/orainstRoot.sh
+/u01/oracle/root.sh
+
+
+ 直接回车   默认
+
+
+第二步安装database
+
+
+ 输入netca
+
+ 一直next直到完成
+
+继续安装
+
+输入dbca
+
+  一直next Global Database Name 和 SID  都输入 wilson
+
+  选择user the same ....all accounts
+    
+    选择 sample schemas
+
+    memory 分配 默认
+ 
+  character sets  选择 Use Unicode(AL32utf8)
+
+  一直next
+    
+ 
+
+运行 sqlplus  拒绝解决办法
+
+
+  一个11g的bug，在安装完数据库后，能正常创建库以及监听。但在启动sqlplus命令，会发现下面的错误： 
+
+[oracle@fw55 bin]$ ./sqlplus /nolog
+
+./sqlplus: error while loading shared libraries: /u01/app/oracle/product/11.2.0/dbhome_1/lib/libclntsh.so.11.1: cannot restore segment prot after reloc: Permission denied
+
+解决方法：
+
+[root@fw55 lib]# getenforce
+
+Enforcing
+
+[root@fw55 lib]# /usr/sbin/setenforce 0 
+
+[root@fw55 lib]# cd /etc/selinux
+
+[root@fw55 selinux]# ls
+
+config  restorecond.conf  semanage.conf  targeted
+
+[root@fw55 selinux]# vi config 
+
+# This file controls the state of SELinux on the system.
+
+# SELINUX= can take one of these three values:
+
+#       enforcing - SELinux security policy is enforced.
+
+#       permissive - SELinux prints warnings instead of enforcing.
+
+#       disabled - SELinux is fully disabled.
+
+SELINUX=disabled      
+
+# SELINUXTYPE= type of policy in use. Possible values are:
+
+#       targeted - Only targeted network daemons are protected.
+
+#       strict - Full SELinux protection.
+
+SELINUXTYPE=targeted
+
+ 把SELINUX设置为disabled 就好了，保存后退出。
+
+SELINUX不设置为disabled 状态的话，FTP传输也会失败
+
+
+
+
+

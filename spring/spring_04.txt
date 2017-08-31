@@ -1,0 +1,45 @@
+﻿1.Spring对数据访问技术的支持
+  1)Spring提供了统一的异常处理类型（DataAccessException）
+  2)Spring提供了编写DAO的支持类
+DaoSuppor类:JdbcDaoSupport,
+            HibernateDaoSupport
+Template类:JdbcTemplate,
+           HibernateTemplate  
+  3)Spring提供了声明式事务管理方法（基于AOP配置实现）
+2.Spring框架如何使用JDBC技术
+  1)新建一个工程，引入Spring开发包和配置文件
+   (IOC和AOP开发包)
+  2)引入JDBC技术相关的开发包
+   (驱动包)
+  3)根据要操作的表，编写对应的实体类
+  4)编写DAO接口和实现类
+  (实现类继承DaoSupport，使用其提供了Template对象实现增删改操作)
+   update():实现增删改查
+   query():实现查询多行记录
+   queryForObject():实现查询单行记录
+   queryForInt():实现查询单个int值
+  5)将DAO组件交给Spring容器，进相关配置
+   --定义DAO组件的<bean>元素
+   --需要给DAO的Bean注入一个dataSource对象。
+   --dataSource对象采用一个连接池构建(dbcp连接池).先引入dbcp连接池开发包，再定义dataSource对象的<bean>元素
+   ----连接池优点------
+   a.增强数据访问的稳定性
+   b.连接池可以将连接数控制在应范围内
+   c.连接池中的连接对象始终与数据库保持联通状态。避免了重复的新建连接和释放连接过程。
+   
+3.Spring框架如何使用Hibernate技术
+  1)新建一个工程，引入Spring开发包和配置文件
+  2)引入hibernate相关的开发包
+   (hibernate开发包+驱动)
+  3)编写实体类和hbm.xml映射描述文件
+  4)编写DAO接口和实现类
+  (实现类继承HibernateDaoSupport,利用DaoSupport提供的HibernateTemplate实现增删改查)
+  5)将DAO组件交给Spring容器管理。
+DAO组件配置时，采用下面注入关系：
+
+DAO对象<-注入-SessionFactory对象
+<-注入-DataSource对象(dbcp连接池)
+
+
+
+

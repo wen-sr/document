@@ -1,0 +1,46 @@
+servlet小结
+	(1)servlet基础
+		1)什么是servlet?
+		2)如何写一个servlet?
+		3)servlet容器是什么?
+		4)servlet依不依赖某个特定的servlet容器?
+		5)http协议(了解)
+		6)get请求与post请求
+		7)表单的处理
+			a,如何获得表单中的参数值
+			b,中文参数值如何获得
+		8)servlet如何输出中文
+	(2)servlet核心
+		1)重定向与转发
+		2)如何获得请求参数值
+		3)容器如何处理请求资源路径
+		4)servlet的生命周期
+		5)线程安全
+		6)servletContext
+	(3)状态管理
+		1)什么是状态管理
+		2)cookie
+			a, cookie是什么?
+			b,如何创建一个cookie?
+			c, cookie的编码问题
+			d, cookie的生存时间
+			e,cookie的路径问题
+			f,cookie的限制
+		3)session
+			a,什么是session?
+			b,如何获得一个session?
+			c, session的常用方法
+			d, session的超时
+			e,删除session
+			f,如果用户禁止cookie,如何继续使用session
+			g,session的优缺点(和cookie比较)
+	(4)数据库访问
+			a,如何使用jdbc访问数据库
+			b, dao
+	(5)过滤器和监听器
+	(6)典型案例和扩展
+			员工管理
+			session验证
+			验证码
+			购物车
+			上传文件

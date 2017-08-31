@@ -1,0 +1,4 @@
+#!/bin/bash
+#this is clear 
+cat /dev/null > /var/log/abc
+echo "abc is cleared"

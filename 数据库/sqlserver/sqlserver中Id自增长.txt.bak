@@ -1,0 +1,4 @@
+1 id numeric(11) identity primary key,
+
+2 仅当使用了列列表并且 IDENTITY_INSERT 为 ON 时，才能为表'admin_info'中的标识列指定显式值。
+  

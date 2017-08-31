@@ -1,0 +1,22 @@
+struts.xml 中的result 的type属性，默认为dispatcher(转发)
+
+在default-struts.xml 中的result-types 下都有定义 
+
+
+redirect : 重定向
+
+chain : 转发到另一个Action（浏览器刷新会重新提交原Action）
+  //采取请求转发的方式完成表单内容的添加刷新浏览器会造成内容能够的重复插入，地址栏显示原servlet的uri,重定向则不会,但是重定向拿不到原servlet的数据，除了session里的数据
+
+redirectAction : 重定向到另一个Action（**常用）（浏览器刷新不会重新提交原Action）
+/*
+携带参数传到action2
+*/
+<result name="success" type="redirectAction">
+	<param name="actionName">action2</>
+	<param name="username">${username}</>	
+	<param name="password">${password}</>
+</result>
+
+
+

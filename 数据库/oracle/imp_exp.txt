@@ -1,0 +1,38 @@
+导入导出分为表级，用户级，表空间级，完全级
+
+imp system/oracle@wensr file=E:\wh1\2014\07\33_28\wh1.dmp tables=(s
+torer) ignore=y
+
+expdp system/oracle@wensr  file=d:\daochu.dmp tables=(inner_notify,notify_staff_relat) log=1.log  
+
+参数说明：
+1 ignore:当目标数据库已存在要恢复的表时，根据这个参数的值进行相应的操作
+=y时:oracle不进行create table 操作，直接将数据插入到表中，如果数据不符合主键等约束将会跳过该记录，继续插入下一条记录
+=n时：oracle不进行create table 操作，但是也不会插入任何记录，直接跳过该表
+
+2 indexes：决定是否恢复表中的索引，但是不管参数是什么，主键对应的唯一索引都将无条件的恢复
+当=n时，表中的其他索引将不会恢复
+
+3 owner:用户
+4 transport_tablespace=y :表空间的信息
+5 direct=y:直接模式，加快导出的速度
+6 rows=y:到出数据
+7 parfile=p.txt:参数文件为p.txt
+8 grants=y:所有授权信息
+9 tables=(emp:m,a:b,%abc%) 导出分区表,模糊查询表
+10 compress=y:压缩
+11 fromuser=user1:从user1用户导入
+12 touser=u1:将数据导入到用户u1下
+13 imp \'sys/oracle as sysdba\':当使用sysdba导入时，需要加上转义引号
+
+字符集的问题：
+1 查看原数据库的字符集
+select * from nls_database_parameters;--nls_language_nls_territory.nls_charactory;
+2 修改exp（windows端的字符集），命令行或者修改注册表
+set nls_lang=AMERICAN_AMERICA.ZHS16GBK
+3 目标数据库的字符集尽量与原数据库一致
+4 查看dmp文件的字符集
+imp sys/oracle show=y file=u.dmp
+
+
+

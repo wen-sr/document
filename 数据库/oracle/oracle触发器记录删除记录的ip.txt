@@ -1,0 +1,9 @@
+ora_client_ip_address//返回客户端的ip
+
+ora_database_name//返回数据库名
+
+ora_login_user //返回登录用户名
+
+ora_sysevent // 返回触发触发器的系统事件名
+
+ora_des_encrypted_password//返回用户des（md5）加密后的密码

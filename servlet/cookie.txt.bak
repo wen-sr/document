@@ -1,0 +1,49 @@
+cookie ：当浏览器访问服务器的时候，服务器可以将少量的数据以set-cookie消息头的方式发送给浏览器，浏览器保存，当浏览器再次访问服务器时，会将之前保存的这些数据以cookie消息头的方式发送给服务器
+
+  
+创建一个cookie
+ Cookie c = new Cookie(String name,String value);
+ response.addCookie(c);
+
+查询cookie
+ Cookie[] cookies =  request.getCookies();
+ String cookie.getName();//获得cookie的名称
+ String cookie.getValue();//获得cookie的值
+
+编码问题：cookie的值或名称只允许出现合法的acii字符串，如果是中文需要将中文转换成ascii字符串
+ String RULEncoder.encode(String str,String code);
+ String URLDecoder.decode(String str,String code);
+
+ 如：
+ new Cookie("username",URLEncoder.encode("汤姆","utf-8"));
+ URLDecoder.decode(cookie.getValue,"utf-8");
+
+
+Cookie的生成时间
+  默认情况下，浏览器会将cookie保存在内存里，只要浏览器不关闭，cookie会一直存在
+  cookie.setMaxAge(int secondes);
+   a,单位是秒
+   b,当seconds > 0 时，浏览器会将cookie保存在硬盘上（当cookie保存的时间超过了seconds，则cookie会被浏览器删除）
+     当seconds < 0 时，缺省值（浏览器会将cookie保存在内存里）
+     当seconds = 0 时，删除cookie
+       如：要删除名称为userid的cookie
+         Cookie c = new Cookie("userId","");
+	 c.setMaxAge(0);
+	 response.addCookie(c);
+
+  cookie 的路径问题：浏览器在向服务器上的某个地址发请求时，会比较请求地址与cookie的路径是否匹配只有匹配的cookie才会发送
+   cookie有一个默认的路径，等于创建该cookie的组建的路径：如/web06_2/app01/addCookie.jsp 创建了一个路径，则cookie默认的路径是/web06_2/app01
+  匹配规则：只有当要访问的地址是cookie的路径或者是其子路径时，浏览器才会将这个cookie进行发送
+  可以调用cookie.setPath(String path) 方法来修改默认的路径
+  一般我们会设置cookie.setPath("/appname");这样应用内部的某个组件所添加额cookie可以被其他组建访问到
+
+  cookie的限制
+    cookie可以被用户禁止
+    cookie保存在客户端，所以cookie不安全，对于一些敏感的数据，需要加密处理
+    cookie只能保存少量的数据（大约4k）
+    cookie的个数也有限制（浏览器只能够保存大约300个cookie）
+    cookie只能保存字符串
+
+
+  通常写一个CookieUtil工具类
+    方法：添加Cookie，查询Cookie，删除Cookie

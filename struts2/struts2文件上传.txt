@@ -1,0 +1,39 @@
+在action中定义
+
+private File file;//file要和文件的name属性相同
+//private List<File> file;//多个文件
+//file.getName() 得到的是临时文件的名字（随机字符串）
+
+private String fileFileName;//file 同上
+//private List<String> fileFileName;
+private String fileContentType;//file 同上
+//private List<String> fileContentType;
+在execute方法中
+
+String root = ServletActionContext.getRequest().getRealPath("/upload");//文件路径 upload文件夹
+InputStream is = new FileInputStream(file);
+File destFile = new File(root,fileFileName);
+OutputStream os = new FileOutputStream(destFile);
+
+byte[] buffer = new byte[400];
+int length = 0;
+while(-1 != (length = is.read(buffer))){
+	os.write(buffer,0,length);
+}
+is.close();
+os.close(); 
+
+在结果页面中如果便利多个文件的名字用到OGNL：
+<s:property value="file" id="f">
+	<s:property value="#f">
+</s:property>
+
+
+
+struts2在进行文件上传操作时，
+1 首先将客户端上传的文件保存到struts.multipart.saveDir 键所指定的目录中，如果该键所指定的目录不存在，那么就保存到javax.servlet.context.tempdir 环境变量所指定的目录中
+
+2 Action中所定义的File类型的成员变量file实际上指向的是临时目录中的临时文件然后在服务器端通过IO的方式将临时文件写入到指定的服务器端的目录中
+
+自己指定上传文件的最大值
+在自己建的struts.properties中覆盖default.properties中的truts.multipart.maxSize=..........//(k)

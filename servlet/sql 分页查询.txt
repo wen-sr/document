@@ -1,0 +1,11 @@
+Mysql
+select * from  table limit 0,5
+ 
+ 0:记录的下标，从0开始
+ 5:取5条记录
+
+
+ oracle
+ select a,b,c from(
+	select a,b,c,rownum n from t where rownum<?
+ ) where n>?

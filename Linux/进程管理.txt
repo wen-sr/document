@@ -1,0 +1,16 @@
+1 查看系统进程
+	ps aux
+	ps -le
+	top 
+2 杀死进程
+	kill -l
+	kill PID
+	killall 进程名
+	w：查看当前登录的用户
+	pkill -9 -t pts/1 :按终端号杀死用户登录进程
+3 修改进程的优先级(PRI数值越小，优先级越高)
+	ps -le
+	NI：nice[-20,-19]
+	PRI：priority
+	PRI = PRI + NI
+	

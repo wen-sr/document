@@ -1,0 +1,47 @@
+1 at ：一次性执行
+①at的安装
+chkconfig --list | grep atd 
+service atd status 
+service atd restart
+②at的访问控制
+/etc/at.allow：白名单
+/etc/at.deny:黑名单
+如果这两个文件都没有，只有root可以使用at
+③at 时间
+at now +2 minutes
+④	atq：查询等待执行的任务 
+	at -c 1（编号）：查询等待执行的命令
+⑤定时重启
+at 02：00 2017-05-37
+at>/bin/sync
+at>/sbin/shutdown -r now
+
+2 crontab：循环定时任务
+① 服务的安装
+chkconfig --list | grep crontab
+service crond status 
+②cron的访问控制
+/etc/cron.cron
+/etc/cron.deny
+③命令
+crontab -e ：进入vi界面编辑命令
+格式：
+*****执行的任务
+第一个*：一个小时当中的第几分钟：0-59
+第二个*：一天当中的第几个小时：0-23
+第三个*：一个月当中的第几天：1-31
+第四个*：一年当中的第几月：1-12
+第五个*：一周当中的星期几：0-7（0=7=日）
+*：代表任何时间：*/10 ****:每隔10分钟
+-：表示联系的时间
+，：表示不连续的时间
+
+0 5 * * 2 ：每周二的5点0分
+④crontab -l ：查询
+ crontab -r:删除定时任务
+ 
+3 系统crontab设置
+/etc/crontab 
+
+4 anacron配置
+vi /etc/anacrotab 

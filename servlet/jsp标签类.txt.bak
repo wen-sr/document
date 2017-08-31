@@ -1,0 +1,112 @@
+利用jsp标签（类似于html标签）来代替jsp中的java代码，这样
+ 使jsp页面更简洁，更方便维护
+jstl： java standard taglib 
+
+ 1 将jstl标签对应的jar文件拷贝到web-inf\lib下，standard.jar   jstl.jar
+ 2 使用taglib指令引入标签库<%@ taglib prefix="c" uri=""%>
+ 
+ 
+ (1) 创建标签的处理类
+（2）创建标签库的描述文件
+（3）在jsp文件中引入标签库，然后插入标签
+     例如：<mm:hello/>
+
+
+必须集成TagSurport或BodyTagSurport
+
+doStartTag()
+
+doEndTag()
+
+自定义标签类
+1 写一个java类，继承SimpleTagSupport 类
+2 在doTag方法里面，编写相应的处理逻辑
+  标签有哪些属性，则标签类也有哪些属性，并且类型要匹配，此外这些属性必须提供相应的set方法
+
+  通过SimpleTagSupport类提供的getJspContext方法来获得pageContext对象
+  pageContext提供了获得其他所有隐含对象的方法
+  如：JspWriter out = (PageContext)pageContext.getOut();
+
+3 在 .tld 文件中描述该标签。 .tld 文件可以放在WEB-INF下，也可以放在META.INF下，可以参考c.tld 文件来写
+  <body-content></body-content>
+   有三个值：
+   empty: 没有标签体
+   scriptless: 可以有标签体，但是标签体里面不能出现java代码（<%%><%=%><%!%>）
+   JSP:有标签体，并且标签体的内容可以是java代码，只有复杂标签技术支持JSP，简单标签技术只支持empty和scriptless
+
+
+在javaee5.0如何使用el表达式和jstl
+ 
+
+j2ee 1.4   servlet2.4   tomcat5.5
+
+javaee 5.0   servlet2.5   tomcat6.0
+
+javaee 6.0   servlet3.0   tomcat7.0
+
+javaee5.0 已经包含了jstl.jar
+
+
+
+1 标签库的描述文件的后缀名是 .tld(tag lib describle)
+
+在WEB-INF下新建一个file取名为**.tld
+
+从其他tld文件（如struts的tld）中考文件头的dtd
+
+
+2 在jsp中插入tag
+	<%@ taglib uri="taglib 下的uri" prefix="hello" %>
+	<hello:tag下的name/>
+
+3 ***.properties 属性文件（内容以key=value呈现，不要引号）
+  
+  在servlet 的init方法中，Properties properties = new Properties();
+		try{
+			//以流的方式获取资源
+			ServletContext context = config.getServletContext();
+			InputStream is = context.getResourceAsStream("/WEB-INF/**properties");
+			properties.load(is);
+			is.close();
+		//将properties对象放置到application范围内供其他组件使用
+			context.setAttribute("ps",properties);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	       String value = properties.getProperty(key);
+
+
+从全局范围中取到application对象
+	Properties ps = (Properties)this.pageContext.getAttribute("ps",pageContext.APPLICATION_SCOPE);
+	String message = ps.getProperty(key);
+	this.pageContext.getOut().println(message);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

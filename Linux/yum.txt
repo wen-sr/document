@@ -1,0 +1,39 @@
+﻿1 yum源
+cd /etc/yum.repos.d/
+
+enable=0:0:不生效；1：生效
+gpgcheck=1:验证；0：不验证
+
+2 光盘搭建yum源
+	① 挂载光盘 mount /dev/sr0 /mnt/cdrom/
+	② 将Base文件改名
+	③ 将Media文件enable=1，baseurl改成挂载点：file:///mnt/cdrom
+	
+3 yum命令
+	yum list
+	yum search
+	yum -y install 包名（不需要包全名）
+	yum -y update 包名（不需要包全名）
+	yum -y remove 包名（不需要包全名）
+	yum grouplist
+	yum groupinstall 软件组名 
+	
+
+Rpm 软件包的管理命令（red hat package management ）
+Rpm -qa | grep 。。。 查找已经安装的包
+Rpm -ivh *.rpm 安装rpm包
+Rpm -e dsfa 卸载rpm包 
+Rpm -uvh 升级
+	
+
+修改yum源
+1、备份
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+2、下载新的CentOS-Base.repo 到/etc/yum.repos.d/
+CentOS 5
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-5.repo
+CentOS 6
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-6.repo
+CentOS 7
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+3、之后运行yum makecache生成缓存

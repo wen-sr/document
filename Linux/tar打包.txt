@@ -1,0 +1,10 @@
+Tar -cvf abc.tar * 将所有文件压缩到bac.tar下
+Tar -xvf abc.tar 解压
+
+tar -zcvf abc.tar.gz * 
+Tar -zxvf  abs.tar.gz
+
+Tar -tf abc.tar 查看abc.tar的内容
+
+tar文件只是把多个文件或文件夹打包合成一个文件，本身并没有进行压缩。
+gz是进行过压缩的文件。

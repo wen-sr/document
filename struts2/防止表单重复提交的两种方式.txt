@@ -1,0 +1,14 @@
+1 通过重定向
+
+2 通过Session Token (session 令牌)
+
+  当客户端请求页面时，服务器会通过token标签生成一个随机数，并且将该随机数放置到session中，然后将该随机数发向客户端；如果客户第一次提交，那么会将该随机数发往服务器端，服务器会接受到该随机数并与session中保存的随机数进行比较，这时两者的值是相同的，服务器认为是第一次提交，并且更新服务器端的这个随机数值；如果此时再次重复提交，那么客户端发向服务器端的随机数还是之前的那个，而服务器的随机数则已经发生了变化，两者不同，服务器就认为这是重复提交，进而转向struts.xml 中result 内invalid.token所指向的结果页面.
+
+
+总结：
+1 在jsp页面必须用struts的标签来编写表单<%@ taglib prefix="s" uri="/struts-tags"%>
+2 在表单中添加<s:token></s:token>
+3 在struts.xml中配置result,并添加两个拦截器
+  <result name="invalid.token">/tokenFail.jsp</>
+  <interceptor-ref name="token"></>
+  <interceptor-ref name="defaultStack"></>

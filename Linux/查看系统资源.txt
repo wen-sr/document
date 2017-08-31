@@ -1,0 +1,10 @@
+vmstat 刷新延时 刷新次数
+1 vmstat 1 3
+2 dmesg | grep CPU
+3 free
+4 cat　/proc/cpuinfo
+5 uptime
+6 uname -a 
+7 file /bin/ls:查看操作系统位数
+8 lsb_release -a:发行版
+9 lsof | more ：查看进程调用的文件（-u:按用户名输出）

@@ -1,0 +1,3 @@
+package 的一个属性 namespace 起到命名空间分割的作用
+
+通常将namespace的名字和jsp文件的目录名相同

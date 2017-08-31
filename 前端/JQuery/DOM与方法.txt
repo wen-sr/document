@@ -1,0 +1,47 @@
+1 append() 和 appendTo()
+	append()前面是被插入的对象，后面是要在对象内插入的元素内容
+	appendTo()前面是要插入的元素内容，而后面是被插入的对象
+
+2 after()与before()
+	before与after都是用来对相对选中元素外部增加相邻的兄弟节点
+	
+3 prepend()与prependTo()
+	prepend()方法将指定元素插入到匹配元素里面作为它的第一个子元素 (如果要作为最后一个子元素插入用.append()).	
+	
+4 empty():只移除了 指定元素中的所有子节点。
+	remove()会将元素自身移除，同时也会移除元素内部的一切，包括绑定的事件及与该元素相关的jQuery数据。
+	
+5 保留数据的删除操作detach()
+6 replaceWith()和replaceAll()用提供的内容替换集合中所有匹配的元素并且返回被删除元素的集合
+7包裹wrap()，unwrap(),将元素用其他元素包裹起来，也就是给它增加一个父元素
+8 children()方法:匹配元素集合中每个元素的所有子元素
+	find()方法:查找DOM树中的这些元素的后代元素
+	parent()方法:查找合集里面的每一个元素的父元素
+	parents():查找合集里面的每一个元素的所有祖辈元素
+	closest()方法:这个方法类似parents但是又有一些细微的区别
+	next()方法:查找指定元素集合中每一个元素紧邻的后面同辈元素的元素集合
+	prev()方法:查找指定元素集合中每一个元素紧邻的前面同辈元素的元素集合
+9 遍历
+	siblings()查找指定元素集合中每一个元素的同辈元素
+	add()方法添加一新的元素
+	.each() 方法就是一个for循环的迭代器
+	// 遍历数组元素
+	$.each(['Aaron', '慕课网'], function(i, item) {
+		$aaron.append("索引=" + i + "; 元素=" + item);
+	});
+	// 遍历对象属性
+	$.each({
+		name: "张三",
+		age: 18
+	}, function(property, value) {
+		$aaron.append("属性名=" + property + "; 属性值=" + value);
+	});
+10 判断某个元素是否存在数组中
+	jQuery.inArray( value, array ,[ fromIndex ] ):传递一个检测的目标值，然后传递原始的数组，可以通过fromIndex规定查找的起始值，默认数组是0开始
+	如果要判断数组中是否存在指定值，你需要通过该函数的返回值不等于(或大于)-1来进行判断
+
+11 $.trim() 去除两段空格
+12 DOM元素的获取get方法：.get( [index ] )
+	get方法是获取的dom对象，也就是通过document.getElementById获取的对象
+	get方法是从0开始索引
+	

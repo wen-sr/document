@@ -1,0 +1,42 @@
+1 click与dbclick事件
+2 mousedown与mouseup事件
+3 mousemove事件
+4 mouseover与mouseout事件
+5 mouseenter与mouseleave事件
+	注：mouseenter事件和mouseover的区别，关键点就是：mouseover冒泡的方式处理问题，mouseenter只会在绑定它的元素上被调用，而不会在后代节点上被触发
+	
+6 hover事件：$(selector).hover(handlerIn, handlerOut)
+7 focusin事件在元素获得焦点的时候触发
+	focusout事件
+8 blur与focus事件
+	注：focus()在元素本身产生，focusin()在元素包含的元素中产生
+9 change事件
+10 select事件：被选择时，会发生 select 事件。
+11 submit事件
+12 keydown()与keyup()事件
+13 keypress()事件
+	注：keypress事件与keydown和keyup的主要区别
+	只能捕获单个字符，不能捕获组合键
+	无法响应系统功能键（如delete，backspace）
+	不区分小键盘和主键盘的数字字符
+14 on()的多事件绑定
+	$("#elem").on("mouseover mouseout",function(){ });
+	$("#elem").on({
+		mouseover:function(){},  
+		mouseout:function(){}
+	});
+15 卸载事件off()方法
+	$("elem").off("mousedown mouseup")
+	$("elem").off()
+
+16 事件对象的属性和方法
+	event.type：获取事件的类型
+	event.pageX 和 event.pageY：获取鼠标当前相对于页面的坐标
+	event.preventDefault() 方法：阻止默认行为
+	event.stopPropagation() 方法：阻止事件冒泡
+	event.which：获取在鼠标单击时，单击的是鼠标的哪个键
+	event.currentTarget : 在事件冒泡过程中的当前DOM元素
+	this和event.target的区别：.this和event.target都是dom对象，js中事件是会冒泡的，所以this是可以变化的，
+	但eventjs中事件是会冒泡的，所以this是可以变化的，但event.target不会变化，它永远是直接接受事件的目标DOM元素；
+	
+17 自定义事件之trigger事件

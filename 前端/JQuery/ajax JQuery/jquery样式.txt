@@ -1,0 +1,13 @@
+$("input:eq(0)").click(function(){
+	$("p").attr("class","high");
+});
+
+$("p").addClass("high");
+
+$("p").removeClass();
+$("p").removeClass("high");
+
+$("p").toggleClass("another");//对是否有another样式进行切换
+
+$("p").hasClass("high");//判断是否有样式high
+$("p").is(".high");

@@ -1,0 +1,174 @@
+1、Oracle锁类型
+	锁的作用
+	latch锁：chain，链
+	LOCK锁
+		排他锁（X）
+		共享锁（S）
+2、行级锁：DML语句
+	事务锁TX
+		锁的结构
+		事务锁的加锁和解锁过程
+	只有排他锁
+		不影响读（CR块）
+3、表级锁：TM
+
+	行级排他锁（Row exclusive）RX锁
+		当我们进行DML时，会自动在被更新的表上添加RX锁，可以执行LOCK命令显式的在表上添加RX锁
+		允许其他事务通过DML语句修改相同表里的其他数据行
+		允许使用lock命令对表添加RX锁定
+		不允许其他事务对表添加X锁
+	行级共享锁（Row Shared，简称RS锁）
+		select … from for update
+	共享锁（Share，简称S锁）
+		通过lock table in share mode命令添加该S锁
+	排他锁（Exclusive，简称X锁）
+		通过lock table in exclusive mode命令添加X锁
+	共享行级排他锁（Share Row Exclusive，简称SRX锁）
+		通过lock table in share row exclusive mode命令添加SRX锁
+
+	lock table  in [row share][row exclusive][share][share row exclusive][exclusive] mode;
+
+
+4、锁的兼容性
+5、加锁语句以及锁的释放
+6、锁相关视图
+	v$transaction
+		XIDUSN表示当前事务使用的回滚段的编号
+		XIDSLOT说明该事务在回滚段头部的事务表中对应的记录编号（也可以叫做槽号）
+		XIDSQN说明序列号
+		STATUS说明该事务是否为活动的
+	v$lock
+		记录了session已经获得的锁定以及正在请求的锁定的信息
+		SID说明session的ID号
+		TYPE说明锁定锁定级别，主要关注TX和TM
+		LMODE说明已经获得的锁定的模式，以数字编码表示
+		REQUEST说明正在请求的锁定的模式，以数字编码表示
+		BLOCK说明是否阻止了其他用户获得锁定，大于0说明是，等于0说明否
+
+	锁定模式		锁定简称	编码数值 
+	Row Exclusive		RX 		3 
+	Row Shared 		RS		2 
+	Share 	 		S 		4 
+	Exclusive 		X 		6 
+	Share Row Exclusive 	SRX 		5 
+	NULL  			N/A 		0或者1 
+
+	v$enqueue_lock
+	该视图中包含的字段以及字段含义与v$lock中的字段一模一样。
+	只不过该视图中只显示那些申请锁定，但是无法获得锁定的session信息。
+	其中的记录按照申请锁定的时间先后顺序排列，先申请锁定的session排在前面，排在前面的session将会先获得锁定。
+
+	v$locked_object
+	记录了当前已经被锁定的对象的信息
+	XIDUSN表示当前事务使用的回滚段的编号
+	XIDSLOT说明该事务在回滚段头部的事务表中对应的记录编号
+	XIDSQN说明序列号
+	OBJECT_ID说明当前被锁定的对象的ID号，可以根据该ID号到dba_objects里查找被锁定的对象名称
+	LOCKED_MODE说明锁定模式的数字编码
+
+	v$session
+	记录了当前session的相关信息
+	SID表示session的编号
+	SERIAL#表示序列号
+	SID和SERIAL#可以认为是v$session的主键，它们共同唯一标识一个session
+
+	grant select on v_$mystat to hr;
+
+	select sid from v$mystat where rownum=1;
+	update employees set last_name=last_name||'a' where department_id=60;
+
+	select xidusn,xidslot,xidsqn,status from v$transaction;
+
+	select sid,type,id1,id2,
+	decode(lmode,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') lock_mode,  
+  decode(request,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') 
+	request_mode,block
+	from v$lock
+	where sid=129;
+	
+	select object_name from dba_objects where object_id=51905;
+
+	对于TM锁来说，ID1表示被锁定的对象的对象ID，ID2始终为0
+	对于TX锁来说，ID1表示事务使用的回滚段编号以及在事务表中对应的记录编号，ID2表示该记录编号被重用的次数（wrap）
+	
+	将ID1拆解
+	select trunc(393249/power(2,16)) as undo_blk#,bitand(393249,to_number('ffff','xxxx')) + 0 as slot#
+	from dual;
+	
+	再次打开一个session
+
+	select sid from v$mystat where rownum=1;
+
+	update employees set last_name=last_name||'b' where department_id=60;
+
+select sid,type,id1,id2,
+decode(lmode,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') lock_mode,
+decode(request,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') 
+request_mode,block
+from v$lock
+where sid in(129,131)
+order by sid;
+
+	再次打开一个会话
+	select sid from v$mystat where rownum=1;
+update employees set last_name=last_name||'c' 
+where department_id=60;
+
+	查询v$enqueue_lock来获得锁定队列中的session信息
+	select sid,type,
+	decode(request,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive')
+	request_mode
+	from v$enqueue_lock
+	where sid in(131,153);
+	
+select a.sid blocker_sid,a.serial#,a.username as blocker_username,b.type,
+decode(b.lmode,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') lock_mode,
+b.ctime as time_held,c.sid as waiter_sid,
+decode(c.request,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') request_mode,
+c.ctime time_waited 
+from   v$lock b, v$enqueue_lock c, v$session a 
+where  a.sid = b.sid and    b.id1= c.id1(+) and b.id2 = c.id2(+) and c.type(+) = 'TX' and  b.type = 'TX' and  b.block   = 1
+order by time_held, time_waited;
+
+alter system kill session '129,10910';
+
+一个事务修改多行，产生一个TX锁
+select sid from v$mystat where rownum=1;
+update employees set last_name=last_name||'a' where department_id=60;
+update departments set department_name='unknow' where department_id=10;
+update locations set city='unknown' where location_id=1100;
+
+select sid,type,id1,id2,
+decode(lmode,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive') lock_mode,
+decode(request,0,'None',1,'Null',2,'Row share',3,'Row Exclusive',4,'Share',5,'Share Row Exclusive',6,'Exclusive')request_mode,block
+from v$lock
+where sid=153;
+
+
+可以获得的TX锁定的总个数由初始化参数transactions决定，而可以获得的TM锁定的个数则由初始化参数dml_locks决定
+select name,value from v$parameter where name in('transactions','dml_locks');
+
+select resource_name as "R_N",current_utilization as "C_U",max_utilization as "M_U",initial_allocation as "I_U" 
+from v$resource_limit 
+where resource_name in('transactions','dml_locks');
+
+死锁
+两个session（以A和C来表示），如果A持有C正在申请的锁定，同时C也持有A正在申请的锁定时，这时发生死锁现象。死锁是典型的“双输”情况，如果任其发展，则会出现A和C这两个session正在执行的事务都无法结束的现象。因此，在Oracle数据库中，造成死锁的那个DML语句会被撤销。死锁总是由于应用程序设计不合理引起的。
+当某个session的事务引起了死锁时，Oracle会自动将阻塞该事务的其他事务中相应的DML语句撤销，而阻塞该事务的其他事务中的其他DML语句并没有撤销。
+
+session 1
+select sid from v$mystat where rownum=1;
+update employees set last_name=last_name||'a' 
+where employee_id=100
+
+session 2
+select sid from v$mystat where rownum=1;
+update employees set last_name=last_name||'b' 
+where employee_id=101;
+
+session 1
+update employees set last_name=last_name||'c' where employee_id=101;
+
+session 2
+update employees set last_name=last_name||'d' where employee_id=100;
+ 

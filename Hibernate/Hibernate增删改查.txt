@@ -1,0 +1,35 @@
+1 增
+  session.save(); 
+  Transaction tx = session.beginTransaction();
+  tx.commit();
+2 删
+  Person person = session.get(Person.class,id);//先将要删除的对象查出来
+  session.delete(person);//把查出来的对象删掉(这个对象只需要id属性)
+
+  
+
+   Cost cost = new Cost();
+   cost.setId(308);
+   session.delete(cost);
+   //cost.setStatus("1");
+   //cost.setStartTime(new Date(System.currentTimeMillis()));
+3 改
+  Object obj =  findById(id);
+  update(Object obj);
+4 查
+
+  Session的get和load方法都可以互殴相应的持久化对象，如果该对象存在，两个方法的行为是一样的，如果该对象不存在，那么该get方法会返回null，而load方法则抛出异常
+  session.get(Object obj);
+
+
+
+  findAll(){
+	Session session = HibernateUtil.openSession();
+	String hql = "from Cost";
+	Query query = session.createQuery(hql);
+	list = query.list();
+  }
+
+
+
+  create sequese Foo_sequece;

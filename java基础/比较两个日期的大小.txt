@@ -1,0 +1,9 @@
+Calendar c1 = Calendar.getInstance();
+c1.setTime(birthday);
+
+Calendar c2 = Calendar.getInstance();
+c2.setTime(graduation);
+
+if(!c1.before(c2)){
+	//表示c1 大于 c2
+}

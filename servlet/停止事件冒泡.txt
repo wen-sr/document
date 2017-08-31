@@ -1,0 +1,8 @@
+
+$(function(){
+
+	$("span").click(function(event){
+		alert("span clicked");
+		event.stopPropagation();//×èÖ¹ÊÂ¼şÃ°Åİ		
+	});
+});

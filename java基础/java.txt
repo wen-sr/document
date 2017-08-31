@@ -1,0 +1,11 @@
+1 String.IndexOf(value, startIndex, count)
+
+  返回String 中 value的索引位置，如未找到返回-1
+
+2 lastIndexOf()  :返回最后一个匹配项的索引位置
+
+
+3 文件上传
+
+<input type="file">
+

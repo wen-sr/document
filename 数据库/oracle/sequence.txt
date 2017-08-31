@@ -1,0 +1,17 @@
+create sequence DEL_JOBS_SEQUENCE
+minvalue 1
+maxvalue 999999999999999999999999999
+start with 1
+increment by 1
+nocycle
+nocache;
+
+
+
+引用：
+select  * from user_sequences;
+select del_jobs_sequence.nextval from dual;
+select del_jobs_sequence.currval from dual;
+注意：事物回退，序列号不会回退
+nocache:每次取值都要计算
+cache n：一次性放入n个值到内存中

@@ -1,0 +1,3 @@
+The web application [/Dispatch] registered the JDBC driver [oracle.jdbc.driver.OracleDriver] 
+but failed to unregister it when the web application was stopped. To prevent a memory leak,
+ the JDBC Driver has been forcibly unregistered.

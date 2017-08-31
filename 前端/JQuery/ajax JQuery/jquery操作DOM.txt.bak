@@ -1,0 +1,61 @@
+1 查询：获得节点的值，属性值，文本以及html内容
+  a html():html内容
+  b text():文本
+  c val():节点的值
+  d attr():属性值
+
+2 创建
+  $(html)
+
+3 插入节点
+  append():
+  prepend():
+  after():
+  before():
+
+4 删除节点
+  remove():
+  empty():清空节点
+
+5 如何将js代码与html分开
+  $(function(){
+	//这儿的js代码会在页面加载完成之后执行。
+  });
+
+6)复制节点  dom / d6.html
+		clone():
+		clone(true):使复制的节点也具有行为(将事件
+		处理代码一块复制)
+
+	7)属性操作
+		读取：attr('');
+		设置：	attr('','') 或者一次
+		设置多个 attr({"":"","":""});
+		删除：removeAttr('')
+		
+	8)样式操作  dom / d7.html
+		获取和设置: attr("class","")或者attr("style","");	
+		追加:addClass('')
+		移除:removeClass('') 
+		或者removeClass('s1 s2') 
+		或者removeClass()//会删除所有样式
+		切换样式：toggleClass,有该样式，就删除，没有，
+		就添加。
+		是否有某个样式 hasClass('')
+		读取css('')
+		设置css('','')或者
+		css({'':'','':''})//设置多个样式
+
+	9)遍历节点  dom / d8.html
+		children()/children(selector):只考虑子元素，
+		不考虑其它后代元素。
+		next()/next(selector)下一个兄弟
+		prev()/prev(selector)上一个兄弟
+		siblings()/siblings(selector)兄弟们
+		find(selector):从某一种节点开始查找所有的后代(满足
+		selector的要求)
+		parent():父节点
+		
+
+		
+			

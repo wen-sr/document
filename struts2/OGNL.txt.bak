@@ -1,0 +1,59 @@
+Object Graph Navigation Language
+
+所需要的jar包：ognl、javassist
+
+OgnlContext(上下文对象)【map】，存在唯一的叫做根的对象（root），可以通过程序设定上下文中的哪个对象作为根对象
+
+将对象加到上下文中
+ context.put("person",person);
+ context.put("dog",dog);
+ //设置根对象
+ context.setRoot(person);
+
+在OGNL中，如果表达式没有使用#号，那么OGNL会从根对象中寻找该属性对应的get方法，如果寻找的不是根对象中的属性，那么则需要以#号开头，告诉OGNL去寻找你所指定的特定对象中的属性
+
+Object obj = Ognl.parseExpression("name");//解析表达式,根对象的属性
+Object obj2 = Ognl.getValue(obj,context,context.getRoot());//获得表达式
+
+Object obj3 = Ognl.parseExpression("#dog.name");//解析非根元素的属性
+Object obj4 = Ognl.getValue(obj3,context,context.getRoot());
+
+Object obj5 = Ognl.parseExpression("name.toUpperCase()");//会调用根对象的getName方法，再调用toUpperCase方法
+Object obj6 = Ognl.getValue(obj3,context,context.getRoot()); 
+
+Object obj7 = Ognl.parseExpression("@java.lang.Integer@toBinaryString(10)");
+Object obj8 = Ognl.getValue(obj7,context,context.getRoot());
+
+Object obj9 = Ognl.parseExpression("@@min(4,10)");
+Object obj10 = Ognl.getValue(obj9,context,context.getRoot());
+
+小结：当使用Ognl通过类名调用静态方法的时候，需要按照
+  @package.classname@methodname(parameter) 这种格式来写，当类名为java.lang.Math时，无需指定类的名字，Math类为Ognl默认的
+
+Object obj11 = Ognl.parseExpression("new java.util.LinkedList()");//生成对象
+Object obj12 = Ognl.getValue(obj11,context,context.getRoot());
+
+Object obj13 = Ognl.getValue("{'aa','bb','cc','dd'}",context,context.getRoot());//生成集合对象（等同于数组）
+Object obj13 = Ognl.getValue("{'aa','bb','cc','dd'}[2]",context,context.getRoot());//cc
+
+Object obj14 = Ognl.getValue("#dog.friends[1]",context,context.getRoot());//处理数组
+Object obj15 = Ognl.getValue("#list[1]",context,context.getRoot());//处理集合
+对于OGNL来说，数组与集合是一样的，都是通过下标索引来访问的，构造集合的时候使用{。。。}形式
+
+使用Ognl处理映射（Map）的语法格式如下#{'key1':'value1';'key2','value2'}
+Object obj16 = Ognl.getValue("#{'key1':'value1','key2':'value2'}",context,context.getRoot());
+Object obj17 = Ognl.getValue("#{'key1':'value1','key2':'value2'}['key3']",context,context.getRoot());
+
+OGNL计算
+ 1 过滤（filtering）：collection.{? expression} 返回一个集合对象
+   List<Person> persons = new ArrayList<Person>();
+   //过滤persons person.name中长度大于4的对象
+   Object obj18 = Ognl.getValue("#persons.{? #this.name.lengh()>4}"，context，context.getRoot());//#this代表当前要操作的对象（即每一个person对象）,相当于增强的for循环
+** 伪属性：size，isEmpty，可以直接用属性的方式来访问（不用加括号）
+ 获取集合中的第一个元素，collection.{^ #this.name.lenth()>4}[0]
+   Object obj19 = Ognl.getValue("#persons.{^ this.name.lenth()>4}[0].name",context,context.getRoot());
+ 获取集合中的最后一个元素，collection.{$ #this.name.lenth()>4}[0]
+      Object obj20 = Ognl.getValue("#persons.{$ this.name.lenth()>4}[0].name",context,context.getRoot());
+ 2 投影（projection）: collection.{expression}
+   Object obj20 = Ognl.getValue("#persons.{name}",context,context.getRoot());//直接投影
+  Object obj21 = Ognl.getValue("#persons.{#this.name.lenth()<=5?"helloworld":#this.name}",context,context.getRoot());

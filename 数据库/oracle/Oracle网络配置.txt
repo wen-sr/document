@@ -1,0 +1,62 @@
+1、Oracle监听拓扑结构
+	默认端口：1521
+	监听的独立性
+	连接建立流程
+2、共享和专用服务器模式
+3、Oracle数据库的几个名字
+	数据库名
+	实例名
+	服务名
+4、netca
+	listener.ora
+	tnsnames.ora
+	sqlnet.ora
+5、双监听：双IP或者双端口
+6、相关命令
+	lsnrctl status/stop/start
+	tnsping
+	alter system register
+7、动态注册、静态注册
+8、几种连接方式
+	sqlplus hr/hr
+	sqlplus hr/hr@jiagulun
+	sqlplus hr/hr@192.168.0.100:1521/jiagulun
+	sqlplus / as sysdba
+
+9、排错流程
+	tnsnames.ora
+		ip、端口号：服务器端 netstat -tulnp|grep 1521
+		service_names show parameter service
+	tnsping
+	lsnrctl status
+	
+	
+	
+监听器：
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 141.168.1.197)(PORT = 1521))
+    )
+  )
+
+SID_LIST_LISTENER=
+  (SID_LIST=
+    (SID_DESC=
+      (SID_NAME=PRD1)
+      (ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1)
+     ))
+
+ADR_BASE_LISTENER = /u01/app/oracle	
+
+
+服务：
+PRD1 =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 141.168.1.197)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = PRD1)
+    )
+  )

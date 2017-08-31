@@ -1,0 +1,6 @@
+StringBuffer zb = new StringBuffer();
+for(String s: ids){
+	zb.append("'").append(s).append("',");
+}
+String id = zb.toString();
+id = zb.substring(0, zb.length()-1);

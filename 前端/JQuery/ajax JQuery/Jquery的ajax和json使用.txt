@@ -1,0 +1,53 @@
+$.ajax({
+
+	type:"POST",
+	url:"MyServlet",
+	dataType:"html",
+	data:{'param1':$("#param1"),'param2':$("#param2")},
+	success:function(returnedData){
+		$("#id").val(returnedData);
+	}
+
+});
+
+
+
+禁用缓存：
+
+在jsp页面 的头部修改；：
+
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+
+
+在servlet中：
+ response.setHeader("pragma","no-cache");
+ response.setHeader("cache-control","no-cache");
+
+
+
+
+
+从servlet发送到页面：
+response.setContentType("text/xml;charset=utf-8")
+PrintWriter out = response.getWriter();
+//设置格式
+OutputFormat format = createPrettyPrint();
+format.setEncoding("utf-8");
+
+//用xml输出
+XMLWriter xmlwriter = new XMLWriter(out,format);
+xmlWriter.writer(document);//document为用dom4j创建的文档对象
+out.flush();
+
+//用json输出
+
+response.setContentType("application/json;charset=utf-8");
+ response.setHeader("pragma","no-cache");
+ response.setHeader("cache-control","no-cache");
+PrintWriter out = response.getWriter();
+out.println(result);
+out.flush();
+
+
+$.post("url",{name:value},function(returnedData,status){});

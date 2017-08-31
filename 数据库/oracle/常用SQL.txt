@@ -1,0 +1,1044 @@
+--管控系统临时表数量：
+SELECT COUNT(*) FROM DBA_OBJECTS
+WHERE OBJECT_TYPE='TABLE' AND OWNER LIKE 'FMIS%'
+AND (SUBSTR(OBJECT_NAME,1,4)='TEMP' OR SUBSTR(OBJECT_NAME,1,3)='TMP'
+OR (SUBSTR(OBJECT_NAME,1,5)='BBHBG' AND LENGTH(OBJECT_NAME)>5)
+OR (SUBSTR(OBJECT_NAME,1,10)='ZWCX_PZTMP' AND LENGTH(OBJECT_NAME)>10)
+OR (SUBSTR(OBJECT_NAME,1,7)='PZCX_20' AND LENGTH(OBJECT_NAME)>7)
+OR (SUBSTR(OBJECT_NAME,1,9)='LJZTABLE_' AND LENGTH(OBJECT_NAME)>9))；
+
+--查询业务热点操作
+select max(lcontent) as "功能点", count(lcontent) as "操作次数"
+  from XTAUDITLOGEVT
+ where INSTR(lcontent, '/') > 0
+    or INSTR(lcontent, '\') > 0
+ group by lcontent
+having count(lcontent) > 1
+ order by 2 desc
+
+--补丁
+select * from dba_registry_history;
+
+
+
+
+--生成手工清除临时表语句
+Select 'DROP TABLE ' || Owner || '.' || Object_Name || ' PURGE;' 
+m Dba_Objects 
+ere Object_Type = 'TABLE' And Owner Like 'FMIS%' And 
+    (Substr(Object_Name, 1, 4) = 'TEMP' Or Substr(Object_Name, 1, 3) = 'TMP') 
+  And    Rownum < 5000; 
+
+--最近7天的DB TIME
+WITH sysstat AS 
+ (select sn.begin_interval_time begin_interval_time, 
+         sn.end_interval_time end_interval_time, 
+         ss.stat_name stat_name, 
+         ss.value e_value, 
+         lag(ss.value, 1) over(order by ss.snap_id) b_value 
+    from dba_hist_sysstat ss, dba_hist_snapshot sn 
+   where trunc(sn.begin_interval_time) >= sysdate - 7 
+     and ss.snap_id = sn.snap_id 
+     and ss.dbid = sn.dbid 
+     and ss.instance_number = sn.instance_number 
+     and ss.dbid = (select dbid from v$database) 
+     and ss.instance_number = (select instance_number from v$instance) 
+     and ss.stat_name = 'DB time') 
+select to_char (BEGIN_INTERVAL_TIME, 'mm-dd hh24:mi') || to_char (END_INTERVAL_TIME, '  
+hh24:mi') date_time, stat_name, round((e_value - nvl(b_value, 0)) / (extract(day 
+  from(end_interval_time - begin_interval_time)) * 24 * 60 * 60 + extract(hour 
+  from(end_interval_time - begin_interval_time)) * 60 * 60 + extract(minute 
+  from(end_interval_time - begin_interval_time)) * 60 + extract(second 
+  from(end_interval_time - begin_interval_time))), 0) per_sec 
+  from sysstat 
+ where(e_value - nvl(b_value, 0)) > 0 and nvl(b_value, 0) > 0 
+
+--查看SESSION CURSOR CACHE情况:
+select sn.name,ss.value where sn.statistic#=ss.statistic# and sn.name in ('session cursor cache hists','session cursor cache count','parse count(total)') and ss.sid=444444;
+
+-- 查看归档空间情况db_recovery_file_dest/db_recovery_file_dest_size
+select * from v$flash_recovery_area_usage;
+
+--查看SGA碎片情况：
+Select Decode(Upper(Ksmchcls), 'FREE', '空闲块_FREE', 'RECR', '可重建块_RECR', 'FREEABL', '可释放块_FREEABL', 'PERM',
+							 '永久块(不可释放)_PERM', Ksmchcls) As Name,
+			 '总块数:' || Lpad(Trim(To_Char(Count(*), '99,999,999,999')), 15) || ',总大小:' ||
+				Lpad(Trim(To_Char(Sum(Ksmchsiz), '99,999,999,999')), 15) || 'BYTES' || ',最大块大小:' ||
+				Lpad(Trim(To_Char(Max(Ksmchsiz), '99,999,999,999')), 15) || 'BYTES' || ',最小块大小:' ||
+				Lpad(Trim(To_Char(Min(Ksmchsiz), '999,999,999')), 12) || 'BYTES' || ',平均块大小:' ||
+				Lpad(Trim(To_Char(Trunc(Avg(Ksmchsiz)), '999,999,999')), 12) || 'BYTES' As Status
+From X$ksmsp
+Group By Decode(Upper(Ksmchcls), 'FREE', '空闲块_FREE', 'RECR', '可重建块_RECR', 'FREEABL', '可释放块_FREEABL', 'PERM',
+								 '永久块(不可释放)_PERM', Ksmchcls)
+--有性能问题的SQL查询
+select b.dbid,
+       b.snap_id,
+       b.instance_number,
+       b.startup_time,
+       b.begin_interval_time,
+       b.end_interval_time,
+       a.optimizer_cost,
+       a.optimizer_mode,
+       a.module,
+       a.sql_profile,
+       a.parsing_schema_name,
+       a.sharable_mem as "Sharable Mem (b)",
+       a.loaded_versions as "Loaded Versions",
+       a.version_count as "Version Count",
+       a.parse_calls_delta as "Parse Calls",
+       a.rows_processed_delta as "Rows Processed",
+       a.executions_delta as "Executions",
+       round(a.elapsed_time_delta / 1000000, 2) as "Elap Time (s)",
+       round(a.cpu_time_delta / 1000000, 2) as "CPU Time (s)",
+       decode(a.executions_delta,
+              0,
+              to_number(null),
+              round(a.elapsed_time_delta / a.executions_delta / 1000000, 2)) as "Elap per Exec (s)",
+       decode(a.executions_delta,
+              0,
+              to_number(null),
+              round(a.cpu_time_delta / a.executions_delta / 1000000, 2)) as "CPU per Exec (s)",
+       decode(a.elapsed_time_delta,
+              0,
+              a.clwait_delta,
+              round(100 * a.clwait_delta / a.elapsed_time_delta, 2)) as "CWT % of Elapsd Time",
+       decode(a.executions_delta,
+              0,
+              to_number(null),
+              round(a.disk_reads_delta / a.executions_delta, 2)) as "Reads per Exec",
+       decode(a.executions_delta,
+              0,
+              to_number(null),
+              round(a.buffer_gets_delta / a.executions_delta, 2)) as "Gets per Exec",
+       decode(a.executions_delta,
+              0,
+              to_number(null),
+              round(a.rows_processed_delta / a.executions_delta, 2)) as "Rows per Exec",
+       a.sql_id,
+       c.sql_text,
+       a.plan_hash_value
+  from dba_hist_sqlstat a, dba_hist_snapshot b, dba_hist_sqltext c
+ where a.dbid = b.dbid
+   and a.instance_number = b.instance_number
+   and a.snap_id = b.snap_id
+   and a.sql_id = c.sql_id(+)
+   and a.sql_id = 'b5hd5cvg27y9g'
+ order by "Elap per Exec (s)" desc, "Elap Time (s)" desc;
+
+--最浪费内存的前10个语句占全部内存读取量的比例
+select sum(pct_bufgets)
+  from (select rank() over(order by buffer_gets desc) as rank_bufgets,
+               to_char(100 * ratio_to_report(buffer_gets) over(), '999.99') pct_bufgets
+          from v$sqlarea)
+ where rank_bufgets < 11;
+通常一个没有优化系统中，10个最常用的SQL语句的访问量会占到整个系统中内存读操作的50%以上。这些SQL是最需要进行优化的部分，也是优化工作中优先级很高的部分。
+
+
+--最浪费磁盘读操作的前10个语句占所有语句的比例：
+select sum(pct_bufgets)
+  from (select rank() over(order by disk_reads desc) as rank_bufgets,
+               to_char(100 * ratio_to_report(disk_reads) over(), '999.99') pct_bufgets
+          from v$sqlarea)
+ where rank_bufgets < 11;
+通常我们的优化目标是将这些SQL的磁盘读操作百分比降低到5-19%。
+
+
+--查询占用临时段情况
+Select se.username,
+         se.sid,
+         su.extents,
+         su.blocks * to_number(rtrim(p.value)) as Space,
+         tablespace,
+         segtype,
+         sql_text
+    from v$sort_usage su, v$parameter p, v$session se, v$sql s
+   where p.name = 'db_block_size'
+     and su.session_addr = se.saddr
+     and s.hash_value = su.sqlhash
+     and s.address = su.sqladdr
+   order by se.username, se.sid
+
+--查询两个实例执行耗时语句
+SELECT T1.INST_ID,T1.SID,T1.SERIAL#,T1.SQL_HASH_VALUE,T1.OPNAME,T1.TARGET,TO_CHAR(T1.START_TIME, 'HH24:MI:SS') "START",ELAPSED_SECONDS,(T1.SOFAR / T1.TOTALWORK) * 100 "PERCENT_COMPLETE",T2.SQL_TEXT
+  FROM GV$SESSION_LONGOPS T1, GV$SQLAREA T2
+ WHERE T1.SQL_ID = T2.SQL_ID AND T1.INST_ID = 1 AND T2.INST_ID = 1
+UNION ALL
+SELECT T1.INST_ID,T1.SID,T1.SERIAL#,T1.SQL_HASH_VALUE,T1.OPNAME,T1.TARGET,TO_CHAR(T1.START_TIME, 'HH24:MI:SS') "START",ELAPSED_SECONDS,(T1.SOFAR / T1.TOTALWORK) * 100 "PERCENT_COMPLETE",T2.SQL_TEXT
+  FROM GV$SESSION_LONGOPS T1, GV$SQLAREA T2
+ WHERE T1.SQL_ID = T2.SQL_ID AND T1.INST_ID = 2 AND T2.INST_ID = 2
+
+
+--查表上的DDL操作
+Select dbms_metadata.get_ddl('TABLE','QT_KMSUMQUERY_RESULT') FROM DUAL;
+Select dbms_metadata.get_ddl('TABLE','QT_GET_KMDETAIL_SES') FROM DUAL;
+
+--查看DB_TIME
+SELECT I.DB_NAME,
+S.SNAP_ID END_SNAP_ID,
+S.INSTANCE_NUMBER,
+TO_CHAR(S.BEGIN_INTERVAL_TIME, 'YYYY-MM-DD HH24:MI:SS') BEGIN_INTERVAL_TIME,
+TO_CHAR(S.END_INTERVAL_TIME, 'YYYY-MM-DD HH24:MI:SS') END_INTERVAL_TIME,
+ROUND(EXTRACT(DAY FROM S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) * 1440 +
+EXTRACT(HOUR FROM S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) * 60 +
+EXTRACT(MINUTE FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) +
+EXTRACT(SECOND FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) / 60,
+2) ELAPSED_TIME,
+ROUND((E.VALUE - B.VALUE) / 1000000 / 60, 2) DB_TIME,
+ROUND(((((E.VALUE - B.VALUE) / 1000000 / 60) /
+(EXTRACT(DAY FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) * 1440 +
+EXTRACT(HOUR FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) * 60 +
+EXTRACT(MINUTE FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) +
+EXTRACT(SECOND FROM
+S.END_INTERVAL_TIME - S.BEGIN_INTERVAL_TIME) / 60)) * 100),
+2) PCT_DB_TIME
+FROM SYS.WRM$_SNAPSHOT S,
+(SELECT DISTINCT DBID, DB_NAME
+FROM SYS.WRM$_DATABASE_INSTANCE
+WHERE DB_NAME = (SELECT NAME FROM V$DATABASE)) I,
+DBA_HIST_SYS_TIME_MODEL E,
+DBA_HIST_SYS_TIME_MODEL B
+WHERE I.DBID = S.DBID
+AND S.DBID = B.DBID
+AND B.DBID = E.DBID
+AND E.SNAP_ID = S.SNAP_ID
+AND E.INSTANCE_NUMBER = S.INSTANCE_NUMBER
+AND B.SNAP_ID = S.SNAP_ID - 1
+AND B.INSTANCE_NUMBER = S.INSTANCE_NUMBER
+AND E.STAT_ID = B.STAT_ID
+AND E.INSTANCE_NUMBER = B.INSTANCE_NUMBER
+AND E.STAT_NAME = 'DB time'
+--AND TO_CHAR(S.BEGIN_INTERVAL_TIME,'YYYY-MM-DD')='2012-07-05'
+ORDER BY END_SNAP_ID DESC;
+
+--查看表空间的使用情况
+
+
+--查询隐含参数
+select a.ksppinm  "Parameter",
+       b.ksppstvl "Session Value",
+       c.ksppstvl "Instance Value"
+  from sys.x$ksppi a, sys.x$ksppcv b, sys.x$ksppsv c
+ where a.indx = b.indx
+   and a.indx = c.indx
+   and a.ksppinm like '%kghdsidx%';
+
+--查看TEMP使用率
+SELECT D.TABLESPACE_NAME,
+       ROUND((D.BYTES) / 1024 / 1024) TOTAL_BYTES,
+       ROUND((D.BYTES - NVL(P.BYTES_USED, 0)) / 1024 / 1024) FREE_BYTES,
+       D.FILE_NAME,
+       ROUND((NVL(P.BYTES_USED, 0)) / 1024 / 1024) USED_BYTES
+  FROM DBA_TEMP_FILES D, V$TEMP_EXTENT_POOL P
+ WHERE P.FILE_ID(+) = D.FILE_ID
+
+select INST_ID,TABLESPACE_NAME TSNAME, TOTAL_EXTENTS TOTAL,USED_EXTENTS USED,FREE_EXTENTS FREE from gv$sort_segment order by inst_id; 
+
+--查询占用TEMP较大SQL
+select se.username,
+       se.sid,
+       se.serial#,
+       se.program,
+       se.machine,
+       se.status,
+       su.extents,
+       round(su.blocks * to_number(rtrim(p.value))/1024/1024/1024,3) as "GB",
+       tablespace,
+       segtype,
+       su.sql_id prev_sql_id,
+       s.sql_id,
+       sql_text
+  from v$sort_usage su, v$parameter p, v$session se, v$sqlarea s
+ where p.name = 'db_block_size'
+   and su.session_addr = se.saddr
+   and s.sql_id=se.sql_id(+)
+ order by extents desc;
+
+--查看耗资源多的SQL
+
+内存
+set serveroutput on size 1000000
+declare
+  top25 number;
+  text1 varchar2(4000);
+  x     number;
+  len1  number;
+  cursor c1 is
+    select buffer_gets, substr(sql_text, 1, 4000)
+      from v$sqlarea
+     order by buffer_gets desc;
+begin
+  dbms_output.put_line('Gets' || '     ' || 'Text');
+  dbms_output.put_line('--------' || ' ' || '---------------');
+  open c1;
+  for i in 1 .. 25 loop
+    fetch c1
+      into top25, text1;
+    dbms_output.put_line(rpad(to_char(top25), 9) || ' ' ||
+                         substr(text1, 1, 66));
+    len1 := length(text1);
+    x    := 66;
+    while len1 > x - 1 loop
+      dbms_output.put_line('"        ' || substr(text1, x, 66));
+      x := x + 66;
+    end loop;
+  end loop;
+end;
+
+
+物理读
+set serveroutput on size 1000000
+declare
+  execution number;
+  top25     number;
+  text1     varchar2(4000);
+  x         number;
+  len1      number;
+  cursor c1 is
+    select executions, disk_reads, substr(sql_text, 1, 4000)
+      from v$sqlarea
+     order by disk_reads desc;
+begin
+  dbms_output.put_line('Exec' || '  ' || 'Reads' || '      ' || 'Text');
+  dbms_output.put_line('-----' || ' ' || '--------' || ' ' ||
+                       '-------------');
+  open c1;
+  for i in 1 .. 25 loop
+    fetch c1
+      into execution, top25, text1;
+    dbms_output.put_line(rpad(to_char(execution), 5) || ' ' ||
+                         rpad(to_char(top25), 8) || ' ' ||
+                         substr(text1, 1, 66));
+    len1 := length(text1);
+    x    := 66;
+    while len1 > x - 1 loop
+      dbms_output.put_line('-              ' || substr(text1, x, 66));
+      x := x + 66;
+    end loop;
+  end loop;
+end;
+
+----SQL ordered by CPU Time
+  select *
+    from (select nvl(round(sqt.cput / 1000000, 2), to_number(null)) as "CPU Time (s)",
+                 nvl(round(sqt.elap / 1000000, 2), to_number(null)) as "Elapsed Time (s)",
+                 sqt.exec as "Executions",
+                 decode(sqt.exec,
+                        0,
+                        to_number(null),
+                        round(sqt.cput / sqt.exec / 1000000, 2)) as "CPU per Exec (s)",
+                 round(100 * sqt.elap /
+                       (SELECT sum(e.VALUE) - sum(b.value)
+                          FROM DBA_HIST_SYS_TIME_MODEL b,
+                               DBA_HIST_SYS_TIME_MODEL e
+                         WHERE B.SNAP_ID = &beg_snap
+                           AND E.SNAP_ID = &end_snap
+                           AND B.DBID = &DBID
+                           AND E.DBID = &DBID
+                           AND B.INSTANCE_NUMBER = &INST_NUM
+                           AND E.INSTANCE_NUMBER = &INST_NUM
+                           and e.STAT_NAME = 'DB time'
+                           and b.stat_name = 'DB time'),
+                       2) as "% Total DB Time",
+                 sqt.sql_id as "SQL Id",
+                 decode(sqt.module, null, null, sqt.module) as "SQL Module",
+                 nvl(st.sql_text, to_clob('** SQL Text Not Available **')) as "SQL Text"
+            from (select sql_id,
+                         max(module) module,
+                         sum(cpu_time_delta) cput,
+                         sum(elapsed_time_delta) elap,
+                         sum(executions_delta) exec
+                    from dba_hist_sqlstat
+                   where dbid = &dbid
+                     and instance_number = &inst_num
+                     and &beg_snap < snap_id
+                     and snap_id <= &end_snap
+                   group by sql_id) sqt,
+                 dba_hist_sqltext st
+           where st.sql_id(+) = sqt.sql_id
+             and st.dbid(+) = &dbid
+           order by nvl(sqt.cput, -1) desc, sqt.sql_id)
+   where rownum <= 100;
+
+--查看占用系统io较大的session
+SELECT se.sid,se.serial#,pr.SPID,se.username,se.status,se.terminal,
+se.program,se.MODULE,se.sql_address,st.event,st.p1text,si.physical_reads,si.block_changes
+FROM v$session se,v$session_wait st,v$sess_io si,v$process pr
+WHERE st.sid=se.sid AND st.sid=si.sid AND se.PADDR=pr.ADDR AND se.sid>6　AND st.wait_time=0 AND st.event NOT LIKE '%SQL%' ORDER BY physical_reads DESC
+
+--识别'低效执行'的SQL语句
+SELECT EXECUTIONS,
+       DISK_READS,
+       BUFFER_GETS,
+       ROUND((BUFFER_GETS - DISK_READS) / BUFFER_GETS, 2) HIT_RADIO,
+       ROUND(DISK_READS / EXECUTIONS, 2) READS_PER_RUN,
+       SQL_TEXT
+  FROM V$SQLAREA
+ WHERE EXECUTIONS > 0
+   AND BUFFER_GETS > 0
+   AND (BUFFER_GETS - DISK_READS) / BUFFER_GETS < 0.8
+ ORDER BY 4 DESC;
+
+--找到 unix命令 top 出来的最耗cpu资源的pid，根据pid最耗资源的sql：
+select /*+ ordered */
+ sql_text
+  from v$sqltext a
+ where (a.hash_value, a.address) in
+       (select decode(sql_hash_value, 0, prev_hash_value, sql_hash_value),
+               decode(sql_hash_value, 0, prev_sql_addr, sql_address)
+          from v$session b
+         where b.paddr =
+               (select addr from v$process c where c.spid = '&pid'))
+ order by piece asc
+
+--Redo Log文件状态
+select f.member "member",
+       f.group# "group",
+       l.bytes/1024/1024 "size",
+       l.status
+from v$logfile f, v$log l
+where f.group#=l.group#
+order by f.group#,f.member
+
+--耗资源的进程(TOP SESSION):
+SELECT S.SCHEMANAME SCHEMA_NAME,
+       DECODE(SIGN(48 - COMMAND),
+              1,
+              TO_CHAR(COMMAND),
+              'ACTION CODE #' || TO_CHAR(COMMAND)) ACTION,
+       STATUS SESSION_STATUS,
+       S.OSUSER OS_USER_NAME,
+       S.SID,
+       P.SPID,
+       S.SERIAL# SERIAL_NUM,
+       NVL(S.USERNAME, '[ORACLE PROCESS]') USER_NAME,
+       S.TERMINAL TERMINAL,
+       S.PROGRAM PROGRAM,
+       ST.VALUE CRITERIA_VALUE
+  FROM V$SESSTAT ST, V$SESSION S, V$PROCESS P
+ WHERE ST.SID = S.SID
+   AND ST.STATISTIC# = TO_NUMBER('38')
+   AND ('ALL' = 'ALL' OR S.STATUS = 'ALL')
+   AND P.ADDR = S.PADDR
+ ORDER BY ST.VALUE DESC, P.SPID ASC, S.USERNAME ASC, S.OSUSER ASC;
+
+--查看执行耗时操作：
+select t1.sid,
+       t1.serial#,
+       t1.opname,
+       t1.target,
+       to_char(t1.start_time, 'yyyy-mm-dd hh24:mi:ss') "start",
+       elapsed_seconds,
+       (t1.sofar / t1.totalwork) * 100 "percent_complete",
+       t1.sql_id,
+       t2.sql_text
+  from v$session_longops t1, v$sqlarea t2
+ where t1.sql_id = t2.sql_id(+)
+   and t1.totalwork <> 0
+ order by "start" desc
+
+SELECT /*+RULE NO_MERGE(A) NO_MREGE(B)*/
+ B.SID, B.SERIAL#, B.USERNAME, B.MACHINE, B.PROGRAM, B.MODULE, B.EVENT, B.STATUS, A.SQL_TEXT, A.LAST_ACTIVE_TIME,
+ (SYSDATE - A.LAST_ACTIVE_TIME) * 60 * 60 * 24 ACTIVE_TIME, A.ELAPSED_TIME, B.LAST_CALL_ET, C.EVENT
+  FROM V$SQL A, V$SESSION B, V$SESSION_WAIT C
+ WHERE A.HASH_VALUE =
+       DECODE(SQL_HASH_VALUE, 0, PREV_HASH_VALUE, SQL_HASH_VALUE)
+   AND B.TYPE = 'USER'
+   AND B.SID <> SYS_CONTEXT('USERENV', 'SID')
+   AND B.SID = C.SID(+)
+ ORDER BY USERNAME, MACHINE;
+
+--查看哪些SESSION正在使用哪些回滚段:
+SELECT R.NAME 回滚段名,
+       S.SID,
+       S.SERIAL#,
+       S.USERNAME 用户名,
+       T.STATUS,
+       T.CR_GET,
+       T.CR_CHANGE,
+       T.LOG_IO,
+       T.PHY_IO,
+       T.USED_UBLK,
+       T.NOUNDO,
+       T.START_TIME,
+       SUBSTR(S.PROGRAM, 1, 78) 操作程序
+  FROM SYS.V_$SESSION S, SYS.V_$TRANSACTION T, SYS.V_$ROLLNAME R
+ WHERE T.ADDR = S.TADDR
+   AND T.XIDUSN = R.USN
+ ORDER BY T.CR_GET, T.PHY_IO;
+
+--检查session中命令执行情况
+select
+   s.sid,s.terminal,s.command,
+   substr(s.username,1,10) username,
+   substr(s.program,1,24) program,
+   decode(s.command,
+       0,'No Command',
+       1,'Create Table',
+       2,'Insert',
+       3,'Select',
+       6,'Update',
+       7,'Delete',
+       9,'Create Index',
+      15,'Alter Table',
+      21,'Create View',
+      23,'Validate Index',
+      35,'Alter Database',
+      39,'Create Tablespace',
+      41,'Drop Tablespace',
+      40,'Alter Tablespace',
+      53,'Drop User',
+      62,'Analyze Table',
+      63,'Analyze Index',
+         s.command||': Other') command,
+      o.sql_text
+from  
+   v$session     s,
+   v$process     p,
+   v$transaction t,
+   v$rollstat    r,
+   v$rollname    n,
+   v$sql         o
+where s.paddr = p.addr (+)
+and   s.taddr = t.addr (+)
+and   t.xidusn = r.usn (+)
+and   r.usn = n.usn (+)
+and   s.sql_address = o.address(+)
+order by 1
+
+--怎样识别IO竞争和负载平衡:
+SELECT DF.NAME 文件名,
+       FS.PHYRDS 读次数,
+       FS.PHYWRTS 写次数,
+       (FS.READTIM / DECODE(FS.PHYRDS, 0, -1, FS.PHYRDS)) 读时间,
+       (FS.WRITETIM / DECODE(FS.PHYWRTS, 0, -1, FS.PHYWRTS)) 写时间
+  FROM V$DATAFILE DF, V$FILESTAT FS
+ WHERE DF.FILE# = FS.FILE#
+ ORDER BY DF.NAME
+
+--监控文件系统的 I/O 比例 
+SELECT SUBSTR(A.FILE#,1,2) "#", SUBSTR(A.NAME,1,30) "NAME",  
+A.STATUS,A.BYTES,B.PHYRDS,B.PHYWRTS FROM V$DATAFILE A, V$FILESTAT B
+WHERE A.FILE# = B.FILE#;
+
+--查看磁盘IO
+SELECT NAME,PHYRDS,PHYWRTS FROM V$DATAFILE DF,V$FILESTAT FS WHERE DF.FILE#=FS.FILE#
+
+--查询某SESSION的IO
+SELECT S.SID,S.SERIAL#,S.USERNAME,IO.BLOCK_GETS,IO.CONSISTENT_GETS,IO.PHYSICAL_READS
+FROM V$SESS_IO IO, V$SESSION S
+WHERE IO.SID=S.SID
+
+--PGA内存消耗
+SELECT V.SID,V.SERIAL#,V.USERNAME,V.MACHINE,V.PROGRAM,V.TYPE,P.SPID,PM.CATEGORY,PM.ALLOCATED,PM.USED,PM.MAX_ALLOCATED
+FROM V$PROCESS P,V$PROCESS_MEMORY PM,V$SESSION V
+WHERE P.PID=PM.PID AND P.ADDR=V.PADDR
+
+--长连接
+SELECT /*+NO_MERGE(A) NO_MREGE(B)*/A.INST_ID,B.SID,B.SERIAL#,B.OSUSER,B.USERNAME,B.PROGRAM,B.STATUS,B.MACHINE,B.LAST_CALL_ET,A.SQL_ID,A.SQL_TEXT
+    FROM (SELECT INST_ID,SQL_ID,SQL_TEXT FROM GV$SQL GROUP BY
+INST_ID,SQL_ID,SQL_TEXT) A,GV$SESSION B
+      WHERE A.SQL_ID = DECODE(NVL(B.SQL_ID, '0'), '0', B.PREV_SQL_ID, NVL(B.
+SQL_ID, '0')) 
+        AND B.TYPE = 'USER' AND B.STATUS='INACTIVE' AND A.INST_ID=B.INST_ID 
+          --AND B.USERNAME IN (SELECT TRIM(UPPER(USERID)) FROM XTDW WHERE TRIM(UPPER(DH))='MAIN') 
+    ORDER BY B.LAST_CALL_ET DESC;
+
+--查询获得系统归档日志的切换频率及大小
+select max(first_time) max_first_time,
+       to_char(first_time, 'yyyy-mm-dd') day,
+       count(recid) count_number
+  from v$log_history
+ group by to_char(first_time, 'yyyy-mm-dd')
+ order by day desc
+
+SELECT TRUNC(COMPLETION_TIME),
+       ROUND(SUM(BLOCKS * BLOCK_SIZE) / 1024 / 1024) AS "SIZE(M)"
+  FROM V$ARCHIVED_LOG
+ GROUP BY TRUNC(COMPLETION_TIME)
+ ORDER BY TRUNC(COMPLETION_TIME) DESC 
+
+SELECT TO_CHAR(COMPLETION_TIME,'YYYY-MM-DD HH24'),THREAD#,
+       ROUND(SUM(BLOCKS * BLOCK_SIZE) / 1024 / 1024) AS "SIZE(M)"
+  FROM V$ARCHIVED_LOG
+ GROUP BY TO_CHAR(COMPLETION_TIME,'YYYY-MM-DD HH24'),THREAD#
+ ORDER by 1 DESC,2
+
+ select a.*, round(b.value / 1024 / 1024, 2) redo_mb
+   from v$session a, v$sesstat b, v$statname c
+  where a.sid = b.sid
+    and b.statistic# = c.statistic#
+    and c.name = 'redo size'
+  order by b.value desc
+
+--SQL占用工作区 
+SELECT sql_text, operation_type, POLICY, last_memory_used / 1024 / 1024, 
+          last_execution, last_tempseg_size 
+      FROM v$sql l, v$sql_workarea a 
+     WHERE l.hash_value = a.hash_value 
+       AND sql_text = 'select distinct * from a where rownum<500000';
+
+--任务占用PGA情况
+select a.sid,b.statistic#,b.name,a.value,c.program,d.sql_text
+  from v$sesstat a,v$statname b,v$session c,v$sqlarea d
+  where a.statistic# = b.statistic# and b.name like '%pga%'
+        and c.sid=a.sid
+        and d.address(+)=decode(c.sql_address,'00',c.prev_sql_addr,c.sql_address)
+  order by a.value desc; 
+
+--查询最多睡眠数和等待时间的阀锁
+select * from (select name, gets, misses, sleeps, wait_time,
+               round(gets * 100 / sum(gets) over(), 2) pct_of_gets,
+               round(misses * 100 / sum(misses) over(), 2) pct_of_misses,
+               round(sleeps * 100 / sum(sleeps) over(), 2) pct_of_sleeps,
+               round(wait_time * 100 / sum(wait_time) over(), 2) pct_of_wait_time
+          from v$latch)
+ where pct_of_wait_time > .1
+    or pct_of_sleeps > .1
+ order by pct_of_wait_time desc;
+
+--当前正在使用并行处理的会话和SQL
+select s.inst_id,
+       s.sid,
+       s.username,
+       p.degree,
+       p.req_degree,
+       p.no_of_processes,
+       sql.sql_text
+  from gv$session s
+  join (select inst_id,
+               qcsid,
+               qcserial#,
+               max(degree) degree,
+               max(req_degree) req_degree,
+               count(*) no_of_processes
+          from gv$px_session
+         group by inst_id, qcsid, qcserial#) p on (s.sid = p.qcsid and
+                                                  s.serial# = p.qcserial# and
+                                                  s.inst_id = p.inst_id)
+  join gv$sql sql on (sql.sql_id = s.sql_id and sql.inst_id = s.inst_id)
+
+--查找共享池中访问某张表的所有SQL
+select /*+ ordered use_hash(d) use_hash(c) */
+ c.kglnahsh hash_value,
+ sum(c.kglobt13) disk_reads,
+ sum(c.kglobt14) logical_reads,
+ sum(c.kglhdexc) executions,
+ c.kglnaobj sql_text
+  from sys.x$kglob o, sys.x$kgldp d, sys.x$kglcursor c where o.inst_id = userenv('Instance')
+   and d.inst_id = userenv('Instance')
+   and c.inst_id = userenv('Instance')
+   and o.kglnaown = upper('&OwnerName')
+   and o.kglnaobj = upper('&TableName')
+   and d.kglrfhdl = o.kglhdadr
+   and c.kglhdadr = d.kglhdadr
+ group by c.kglnaobj, c.kglnahsh
+ order by 3 desc
+
+ --查看主外键关系
+select a.owner       主键拥有者,
+       a.table_name  主键表,
+       b.column_name 主键列,
+       C.OWNER       外键拥有者,
+       c.table_name  外键表,
+       d.column_name 外键列
+  from user_constraints a
+  left join user_cons_columns b on a.constraint_name = b.constraint_name
+  left join user_constraints C ON C.R_CONSTRAINT_NAME = a.constraint_name
+  left join user_cons_columns d on c.constraint_name = d.constraint_name
+ where a.constraint_type = 'P'
+   and a.table_name = '&TABLENAME'
+ order by a.table_name
+
+--查询阻塞
+SELECT /*+ ORDERED */ '阻塞者：
+('||A1.SID||':'||A1.SCHEMANAME||')-SQL:'||C1.SQL_TEXT 
+BLOCKERS,A1.MACHINE,A1.PROGRAM,A1.LOGON_TIME, 
+'等待者：('||A.SID||':'||A.SCHEMANAME||')-SQL:'||C.SQL_TEXT WAITERS,A.MACHINE AS 
+W_MACHINE,A.PROGRAM AS W_PROGRAM,A.LOGON_TIME AS W_LOGON_TIME 
+FROM V$LOCK B,V$SESSION A,V$SQLAREA C,V$LOCK B1,V$SESSION A1,V$SQLAREA C1 
+WHERE A.LOCKWAIT=B.KADDR AND C.HASH_VALUE(+)=A.SQL_HASH_VALUE 
+AND B1.REQUEST=0 AND A1.USERNAME IS NOT NULL AND A1.SID=B1.SID AND 
+C1.HASH_VALUE(+)=A1.SQL_HASH_VALUE AND B1.ID1=B.ID1;
+
+
+--topas出来的最耗cpu资源的pid，根据pid找到最耗资源的sql：
+select /*+ ordered */
+ sql_text
+  from v$sqltext a
+ where (a.hash_value, a.address) in
+       (select decode(sql_hash_value, 0, prev_hash_value, sql_hash_value),
+               decode(sql_hash_value, 0, prev_sql_addr, sql_address)
+          from v$session b
+         where b.paddr =
+               (select addr from v$process c where c.spid = '&pid'))
+ order by piece asc
+
+--频繁访问的表和索引（X$中TCH代表访问次数，可据此将热表、索引放入KEEP池）
+Select decode(pd.bp_id,1,'KEEP',2,'RECYCLE',3,'DEFAULT',4,
+'2K SUBCACHE', 5,'4K SUBCACHE',6,'8K SUBCACHE',7,
+'16K SUBCACHE',8,'32K SUBCACHE','UNKNOWN') subcache,
+bh.object_name object_name,bh.blocks,tch
+from x$kcbwds ds, x$kcbwbpd pd,
+(select set_ds,
+o.name object_name, count(*) BLOCKS,sum(tch) tch
+from sys.obj$ o, sys.x$bh x
+where o.dataobj# = x.obj
+and x.state !=0 and o.owner# =(select user_id from dba_users where username='FMIS2700')
+group by set_ds,o.name) bh
+where ds.set_id >= pd.bp_lo_sid
+and ds.set_id <= pd.bp_hi_sid
+and pd.bp_size != 0
+and ds.addr=bh.set_ds
+AND TCH>2000
+order by subcache,object_name;
+
+
+
+Select decode(pd.bp_id,1,'KEEP',2,'RECYCLE',3,'DEFAULT',4,
+'2K SUBCACHE', 5,'4K SUBCACHE',6,'8K SUBCACHE',7,
+'16K SUBCACHE',8,'32K SUBCACHE','UNKNOWN') subcache,
+bh.object_name object_name,bh.blocks,tch
+from x$kcbwds ds, x$kcbwbpd pd,
+(select set_ds,
+o.name object_name, count(*) BLOCKS,sum(tch) tch
+from sys.obj$ o, sys.x$bh x
+where o.dataobj# = x.obj
+and x.state !=0 and o.owner# !=0
+group by set_ds,o.name) bh
+where ds.set_id >= pd.bp_lo_sid
+and ds.set_id <= pd.bp_hi_sid
+and pd.bp_size != 0
+and ds.addr=bh.set_ds
+AND TCH>100000
+order by subcache,object_name;
+
+--gc blocks
+select inst_id, owner, object_name, gc_blocks_received, pct
+   from (select inst_id,
+                owner,
+                object_name,
+                sum(value) gc_blocks_received,
+                round((ratio_to_report(sum(value)) over()) * 100, 2) pct
+           from gv$segment_statistics
+          where statistic_name like 'gc%'
+            and value > 0
+          group by inst_id, owner, object_name) segment_misses
+  where pct > 1
+  order by pct desc
+
+--找到 unix命令 top 出来的最耗cpu资源的pid，根据pid最耗资源的sql：
+select /*+ ordered */
+ sql_text
+  from v$sqltext a
+ where (a.hash_value, a.address) in
+       (select decode(sql_hash_value, 0, prev_hash_value, sql_hash_value),
+               decode(sql_hash_value, 0, prev_sql_addr, sql_address)
+          from v$session b
+         where b.paddr =
+               (select addr from v$process c where c.spid = '&pid'))
+ order by piece asc
+
+--Redo Log文件状态
+select f.member "member",
+       f.group# "group",
+       l.bytes/1024/1024 "size",
+       l.status
+from v$logfile f, v$log l
+where f.group#=l.group#
+order by f.group#,f.member
+
+--耗资源的进程(TOP SESSION):
+SELECT S.SCHEMANAME SCHEMA_NAME,
+       DECODE(SIGN(48 - COMMAND),
+              1,
+              TO_CHAR(COMMAND),
+              'ACTION CODE #' || TO_CHAR(COMMAND)) ACTION,
+       STATUS SESSION_STATUS,
+       S.OSUSER OS_USER_NAME,
+       S.SID,
+       P.SPID,
+       S.SERIAL# SERIAL_NUM,
+       NVL(S.USERNAME, '[ORACLE PROCESS]') USER_NAME,
+       S.TERMINAL TERMINAL,
+       S.PROGRAM PROGRAM,
+       ST.VALUE CRITERIA_VALUE
+  FROM V$SESSTAT ST, V$SESSION S, V$PROCESS P
+ WHERE ST.SID = S.SID
+   AND ST.STATISTIC# = TO_NUMBER('38')
+   AND ('ALL' = 'ALL' OR S.STATUS = 'ALL')
+   AND P.ADDR = S.PADDR
+ ORDER BY ST.VALUE DESC, P.SPID ASC, S.USERNAME ASC, S.OSUSER ASC;
+
+--查看执行耗时操作：
+select t1.sid,
+       t1.serial#,
+       t1.opname,
+       t1.target,
+       to_char(t1.start_time, 'yyyy-mm-dd hh24:mi:ss') "start",
+       elapsed_seconds,
+       (t1.sofar / t1.totalwork) * 100 "percent_complete",
+       t1.sql_id,
+       t2.sql_text
+  from v$session_longops t1, v$sqlarea t2
+ where t1.sql_id = t2.sql_id(+)
+   and t1.totalwork <> 0
+ order by "start" desc
+
+select b.sid, b.serial#, b.username, b.machine, b.program, b.module, b.event, b.blocking_instance, b.blocking_session, b.status, b.last_call_et, 
+a.sql_id, a.sql_text, a.last_active_time, a.elapsed_time, a.cpu_time, a.executions
+  from v$sql a, v$session b
+ where a.sql_id(+)=b.sql_id
+   and b.type = 'USER'
+   and b.sid <> sys_context('userenv', 'sid')
+ order by username, machine;
+
+--查看哪些SESSION正在使用哪些回滚段:
+SELECT R.NAME 回滚段名,
+       S.SID,
+       S.SERIAL#,
+       S.USERNAME 用户名,
+       T.STATUS,
+       T.CR_GET,
+       T.CR_CHANGE,
+       T.LOG_IO,
+       T.PHY_IO,
+       T.USED_UBLK,
+       T.NOUNDO,
+       T.START_TIME,
+       SUBSTR(S.PROGRAM, 1, 78) 操作程序
+  FROM SYS.V_$SESSION S, SYS.V_$TRANSACTION T, SYS.V_$ROLLNAME R
+ WHERE T.ADDR = S.TADDR
+   AND T.XIDUSN = R.USN
+ ORDER BY T.CR_GET, T.PHY_IO;
+
+--检查session中命令执行情况
+select
+   s.sid,s.terminal,s.command,
+   substr(s.username,1,10) username,
+   substr(s.program,1,24) program,
+   decode(s.command,
+       0,'No Command',
+       1,'Create Table',
+       2,'Insert',
+       3,'Select',
+       6,'Update',
+       7,'Delete',
+       9,'Create Index',
+      15,'Alter Table',
+      21,'Create View',
+      23,'Validate Index',
+      35,'Alter Database',
+      39,'Create Tablespace',
+      41,'Drop Tablespace',
+      40,'Alter Tablespace',
+      53,'Drop User',
+      62,'Analyze Table',
+      63,'Analyze Index',
+         s.command||': Other') command,
+      o.sql_text
+from  
+   v$session     s,
+   v$process     p,
+   v$transaction t,
+   v$rollstat    r,
+   v$rollname    n,
+   v$sql         o
+where s.paddr = p.addr (+)
+and   s.taddr = t.addr (+)
+and   t.xidusn = r.usn (+)
+and   r.usn = n.usn (+)
+and   s.sql_address = o.address(+)
+order by 1
+
+--怎样识别IO竞争
+select f.file#,  
+       f.name,  
+       s.phyrds,  
+       s.phyblkrd,  
+       s.readtim, --所有的读取工作信息  
+       s.singleblkrds,  
+       s.singleblkrdtim, --Single Block I/O  
+       (s.phyblkrd - s.singleblkrds) as multiblkrd, --Multi Block I/O次数  
+       (s.readtim - s.singleblkrdtim) as multiblkrdtim, --Multi Block I/O时间  
+       round(s.singleblkrdtim /  
+             decode(s.singleblkrds, 0, 1, s.singleblkrds),  
+             3) as singleblk_avgtim, --Single Block I/O 平均等待时间（cs）  
+       round((s.readtim - s.singleblkrdtim) /  
+             nullif((s.phyblkrd - s.singleblkrds), 0),  
+             3) as multiblk_avgtim --Multi Block I/O 平均等待时间（cs）  
+  from v$filestat s, v$datafile f  
+ where s.file# = f.file#;  
+
+--查看占用系统io较大的session
+SELECT se.sid,se.serial#,pr.SPID,se.username,se.status,se.terminal,
+se.program,se.MODULE,se.sql_address,st.event,st.p1text,si.physical_reads,si.block_changes
+FROM v$session se,v$session_wait st,v$sess_io si,v$process pr
+WHERE st.sid=se.sid AND st.sid=si.sid AND se.PADDR=pr.ADDR AND se.sid>6　AND st.wait_time=0 AND st.event NOT LIKE '%SQL%' ORDER BY physical_reads DESC
+
+--长连接
+SELECT /*+NO_MERGE(A) NO_MREGE(B)*/A.INST_ID,B.SID,B.SERIAL#,B.OSUSER,B.USERNAME,B.PROGRAM,B.STATUS,B.MACHINE,B.LAST_CALL_ET,A.SQL_ID,A.SQL_TEXT
+    FROM (SELECT INST_ID,SQL_ID,SQL_TEXT FROM GV$SQL GROUP BY
+INST_ID,SQL_ID,SQL_TEXT) A,GV$SESSION B
+      WHERE A.SQL_ID = DECODE(NVL(B.SQL_ID, '0'), '0', B.PREV_SQL_ID, NVL(B.
+SQL_ID, '0')) 
+        AND B.TYPE = 'USER' AND B.STATUS='INACTIVE' AND A.INST_ID=B.INST_ID 
+          --AND B.USERNAME IN (SELECT TRIM(UPPER(USERID)) FROM XTDW WHERE TRIM(UPPER(DH))='MAIN') 
+    ORDER BY B.LAST_CALL_ET DESC;
+
+--查询获得系统归档日志的切换频率及大小
+select max(first_time) max_first_time,
+       to_char(first_time, 'yyyy-mm-dd') day,
+       count(recid) count_number
+  from v$log_history
+ group by to_char(first_time, 'yyyy-mm-dd')
+ order by day desc
+
+SELECT TRUNC(COMPLETION_TIME),
+       ROUND(SUM(BLOCKS * BLOCK_SIZE) / 1024 / 1024) AS "SIZE(M)"
+  FROM V$ARCHIVED_LOG
+ GROUP BY TRUNC(COMPLETION_TIME)
+ ORDER BY TRUNC(COMPLETION_TIME) DESC 
+
+SELECT TO_CHAR(COMPLETION_TIME,'YYYY-MM-DD HH24'),THREAD#,
+       ROUND(SUM(BLOCKS * BLOCK_SIZE) / 1024 / 1024) AS "SIZE(M)"
+  FROM V$ARCHIVED_LOG
+ GROUP BY TO_CHAR(COMPLETION_TIME,'YYYY-MM-DD HH24'),THREAD#
+ ORDER by 1 DESC,2
+
+ select a.*, round(b.value / 1024 / 1024, 2) redo_mb
+   from v$session a, v$sesstat b, v$statname c
+  where a.sid = b.sid
+    and b.statistic# = c.statistic#
+    and c.name = 'redo size'
+  order by b.value desc
+
+--SQL占用工作区 
+SELECT sql_text, operation_type, POLICY, last_memory_used / 1024 / 1024, 
+          last_execution, last_tempseg_size 
+      FROM v$sql l, v$sql_workarea a 
+     WHERE l.hash_value = a.hash_value 
+       AND sql_text = 'select distinct * from a where rownum<500000';
+
+--任务占用PGA情况
+select a.sid,b.statistic#,b.name,a.value,c.program,d.sql_text
+  from v$sesstat a,v$statname b,v$session c,v$sqlarea d
+  where a.statistic# = b.statistic# and b.name like '%pga%'
+        and c.sid=a.sid
+        and d.address(+)=decode(c.sql_address,'00',c.prev_sql_addr,c.sql_address)
+  order by a.value desc; 
+
+--PGA内存消耗
+SELECT V.SID,V.SERIAL#,V.USERNAME,V.MACHINE,V.PROGRAM,V.TYPE,P.SPID,PM.CATEGORY,PM.ALLOCATED,PM.USED,PM.MAX_ALLOCATED
+FROM V$PROCESS P,V$PROCESS_MEMORY PM,V$SESSION V
+WHERE P.PID=PM.PID AND P.ADDR=V.PADDR
+
+--查询最多睡眠数和等待时间的阀锁
+select * from (select name, gets, misses, sleeps, wait_time,
+               round(gets * 100 / sum(gets) over(), 2) pct_of_gets,
+               round(misses * 100 / sum(misses) over(), 2) pct_of_misses,
+               round(sleeps * 100 / sum(sleeps) over(), 2) pct_of_sleeps,
+               round(wait_time * 100 / sum(wait_time) over(), 2) pct_of_wait_time
+          from v$latch)
+ where pct_of_wait_time > .1
+    or pct_of_sleeps > .1
+ order by pct_of_wait_time desc;
+
+--当前正在使用并行处理的会话和SQL
+select s.inst_id,
+       s.sid,
+       s.username,
+       p.degree,
+       p.req_degree,
+       p.no_of_processes,
+       sql.sql_text
+  from gv$session s
+  join (select inst_id,
+               qcsid,
+               qcserial#,
+               max(degree) degree,
+               max(req_degree) req_degree,
+               count(*) no_of_processes
+          from gv$px_session
+         group by inst_id, qcsid, qcserial#) p on (s.sid = p.qcsid and
+                                                  s.serial# = p.qcserial# and
+                                                  s.inst_id = p.inst_id)
+  join gv$sql sql on (sql.sql_id = s.sql_id and sql.inst_id = s.inst_id)
+
+--查找共享池中访问某张表的所有SQL
+select /*+ ordered use_hash(d) use_hash(c) */
+ c.kglnahsh hash_value,
+ sum(c.kglobt13) disk_reads,
+ sum(c.kglobt14) logical_reads,
+ sum(c.kglhdexc) executions,
+ c.kglnaobj sql_text
+  from sys.x$kglob o, sys.x$kgldp d, sys.x$kglcursor c
+ where o.inst_id = userenv('Instance')
+   and d.inst_id = userenv('Instance')
+   and c.inst_id = userenv('Instance')
+   and o.kglnaown = upper('&OwnerName')
+   and o.kglnaobj = upper('&TableName')
+   and d.kglrfhdl = o.kglhdadr
+   and c.kglhdadr = d.kglhdadr
+ group by c.kglnaobj, c.kglnahsh
+ order by 3 desc
+
+--外键未加索引，将可能导致两个严重的问题：一是更新相关表产生死锁，二是两表关联查询时性能低下。以下查询外键未建索引的表
+select table_name,
+       constraint_name,
+       cname1 || nvl2(cname2, ',' || cname2, null) ||
+       nvl2(cname3, ',' || cname3, null) ||
+       nvl2(cname4, ',' || cname4, null) ||
+       nvl2(cname5, ',' || cname5, null) ||
+       nvl2(cname6, ',' || cname6, null) ||
+       nvl2(cname7, ',' || cname7, null) ||
+       nvl2(cname8, ',' || cname8, null) columns,
+       'create index IX_' || table_name || '_' || cname1 ||
+       nvl2(cname2, '_' || cname2, null) ||
+       nvl2(cname3, '_' || cname3, null) ||
+       nvl2(cname4, '_' || cname4, null) ||
+       nvl2(cname5, '_' || cname5, null) ||
+       nvl2(cname6, '_' || cname6, null) ||
+       nvl2(cname7, '_' || cname7, null) ||
+       nvl2(cname8, '_' || cname8, null) || ' ON ' || table_name || '(' ||
+       cname1 || nvl2(cname2, ',' || cname2, null) ||
+       nvl2(cname3, ',' || cname3, null) ||
+       nvl2(cname4, ',' || cname4, null) ||
+       nvl2(cname5, ',' || cname5, null) ||
+       nvl2(cname6, ',' || cname6, null) ||
+       nvl2(cname7, ',' || cname7, null) ||
+       nvl2(cname8, ',' || cname8, null) || ');' create_index_sql
+  from (select b.table_name,
+               b.constraint_name,
+               max(decode(position, 1, column_name, null)) cname1,
+               max(decode(position, 2, column_name, null)) cname2,
+               max(decode(position, 3, column_name, null)) cname3,
+               max(decode(position, 4, column_name, null)) cname4,
+               max(decode(position, 5, column_name, null)) cname5,
+               max(decode(position, 6, column_name, null)) cname6,
+               max(decode(position, 7, column_name, null)) cname7,
+               max(decode(position, 8, column_name, null)) cname8,
+               count(*) col_cnt
+          from (select substr(table_name, 1, 30) table_name,
+                       substr(constraint_name, 1, 30) constraint_name,
+                       substr(column_name, 1, 30) column_name,
+                       position
+                  from user_cons_columns) a,
+               user_constraints b
+         where a.constraint_name = b.constraint_name
+           and b.constraint_type = 'R'
+         group by b.table_name, b.constraint_name) cons
+ where col_cnt > ALL
+ (select count(*)
+          from user_ind_columns i
+         where i.table_name = cons.table_name
+           and i.column_name in (cname1, cname2, cname3, cname4, cname5,
+                cname6, cname7, cname8)
+           and i.column_position <= cons.col_cnt
+         group by i.index_name);
+
+

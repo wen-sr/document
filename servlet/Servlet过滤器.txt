@@ -1,0 +1,71 @@
+容器一启动就会创建过滤器
+
+如何写一个过滤器：
+ 1 写一个java类，实现Filter接口
+ 2 在doFilter 方法里面，编写处理逻辑
+ 3 配置过滤器
+
+在请求到达servlet（jsp、html）之前进行过滤
+
+响应到达客户端之前进行过滤
+
+
+所有的Servlet过滤器都必须实现 javax.servlet.Filter接口
+
+必修实现的方法：init(FiterConfig)
+
+doFilter(ServletRequest,ServletResponse,FilterChain)
+      前两个参数 需要强制转换成http的请求和响应对象
+  FilterChain 过滤器链，如果调用了过滤器的doFilter方法，容器会继续调用后续的过滤器或servlet，如果没有调用FilterChain的doFilter方法，容器将不会继续向后调用
+HttpServletRequest req = (HttpServletRequest)request;
+HttpServletResponse resp = (HttpServletResponse)response;
+//request.getRemoteAddr();
+
+
+过滤器的配置参数：
+  在web.xml中配置
+  <init-param>
+	<param-name>illegalStr</param-name>
+	<param-value>cat</>
+  </init-param>
+
+ 访问这些参数,因为init方法只会执行一个，执行完之后FilterConfig对象就会被销毁，所以需要在这个类中添加一个属性 private FilterConfig config
+ 这样在doFilter方法中才能用
+
+ 如：在doFilter中
+ String illegalStr = config.getInitParameter("illegalStr");
+
+
+
+
+String requestURI = r.getRequestURI();
+if(requestURI.endsWith("login.jsp")||requestURI.endsWith("MyLoginServlet")){
+	chain.doFilter(request,response);
+	return;
+}
+HttpSession session = r.getSession();
+if(null == session.getAttribute("user")){
+	((HttpServletResponse)response).sendRedirect("..jsp");
+}else{
+	chain.doFilter(request,response);
+	return;
+}
+
+
+
+destroy()
+
+
+
+小练习：一个简易的留言板
+1 内容包含了习近平替换成***
+2 留言用户的名称，如果名称中包含了张，改成李
+
+
+
+
+
+
+
+
+

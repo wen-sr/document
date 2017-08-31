@@ -1,0 +1,24 @@
+命令行：
+git config --global user.name 'wen-sr'
+git config --global user.email 'wen-sr@qq.com'
+git config --global core.autocrlf false
+git config --global core.quotepath off
+git config --global gui.encoding utf-8
+
+
+
+
+
+文件内容：~/.gitconfig
+[user]
+	name = wensr
+	email = wen-sr@qq.com
+[alias]
+	co = checkout
+	ci = commit
+	st = status
+	pl = pull
+	ps = push
+	dt = difftool
+	ca = commit -am
+	b = branch

@@ -1,0 +1,19 @@
+容器会产生两大事件：
+  a 生命周期相关的事件：容器在创建或者销毁requet，session，sevletContext（servlet上下文）
+  b 绑定相关事件：容器调用了request，session，servletContext的setAttribute、removeAttribute方法
+
+如何写一个监听器
+1 写一个java类，实现监听器接口（依据监听的事件类型来选择对应的接口）
+2 在监听器接口定义的方法里面，编写处理逻辑
+3 配置
+
+Interface ServletContextListener:监听服务器启动和关闭
+
+web.xml 配置
+
+<listener>
+	<listener-class></listener-class>
+</listener>
+
+
+Interfacee ServletContextAttributreListener

@@ -1,0 +1,93 @@
+﻿=====关联映射=====
+关联映射主要是在对象之间建立关系。开发者可以通过关系进行信息查询、添加、删除和更新操作。
+1.一对多关系
+ 1）关系建立方法
+ --在1方Account中添加Set集合属性
+ --在1方Account.hbm.xml中添加属性描述
+   <set name="属性名">
+      <key column="指定关联条件的外键字段">
+      </key>
+      <one-to-many 
+    class="要关联加载的
+      另一方Service"/>
+   </set>
+测试，采用account.getServices()方法获取相关Service记录。
+
+2.多对一关系
+  1）关系建立方法
+ --在n方Service中添加Account属性
+ --在n方Service.hbm.xml中描述属性
+  <many-to-one name="属性名"
+class="要关联的另一方类型Account" column="关联条件的外键字段"/>
+ --删除Service中原有的外键字段映射属性和映射描述
+
+测试，通过service.getAccount()获取相关的Account信息。
+
+3.关联操作
+  1）查询操作
+  建立关联映射后，默认情况下在调用关联属性的getter方法时，会再发送一个SQL加载关系表数据。
+  如果需要将关联数据与主对象一起加载，可以采用下面方法：  
+  a.在hbm.xml关联属性映射描述中，使用lazy="false" fetch="join"  
+  b.编写HQL，采用join fetch 关联属性方式实现。（推荐使用）
+  2）级联操作
+  当对主对象增删改时，可以对关系属性中的数据也相应的执行增删改。
+  级联操作默认关闭，如果需要使用，可以在关联属性映射部分添加cascade属性，属性值如下：
+  none:默认值，不支持级联
+  delete:级联删除
+  save-update:级联添加和更新
+  all:级联添加、删除、更新
+
+  3)inverse属性作用
+  默认情况下，采用了级联操作，hibernate在执insert,update
+,delete基本操作后，还要执行update关系字段⁯值的操作（即关系维护工作）。默认是关联对象双方都要负责关系维护。可以采用inverse="true"设置，将这项工作交给对方负责。
+(遇到一对多和多对一关系映射时,在one-to-many一方添加inverse=true)
+
+  4)级联删除
+   提示：在批量删除情况下，建议采用HQL语句的方式。例如
+ delete from Account where id=?
+ delete from Service 
+   where account.id=?
+
+4.多对多关联映射
+  数据库设计是采用3张数据表，有一张是关系表。例如
+ADMIN_INFO-->ADMIN_ROLE<--ROLE
+  
+  1)关系映射的建立
+   a.在Admin中添加了一个集合属性
+   b.在Admin.hbm.xml中定义属性的映射描述。
+<set name="关联属性名"
+     table="中间的关系表">
+  <key column="关系表中与当前一方关联的字段">
+  </key>
+  <many-to-many 
+    class="关联的另一方类型" 
+    column="关系表中与另一方关联的字段">
+  </many-to-many>
+</set>
+
+测试，采用admin.getRoles()可以获取admin具有的角色信息。
+
+5.继承关系映射
+  可以将数据表映射成具有继承关系的实体类。
+ Hibernate提供了3种方式的继承映射
+ 1）将一个表映射成父类和子类
+   采用<subclass>描述子类
+ 2）将子类表映射成父类和子类
+   采用<union-subclass>描述子类
+ *3）将父类表和子类表映射成父类和子类
+   采用<joined-subclass>描述子类继承关系映射
+<joined-subclass 
+    name="子类类型"
+    table="子类表" 
+    extends="父类类型">
+  <key column="子类表与父类表关联的字段">
+  </key>
+  //子类中属性的映射property元素
+</joined-subclass>
+
+
+
+
+
+
+  

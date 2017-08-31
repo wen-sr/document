@@ -1,0 +1,10 @@
+﻿手工复制数据库
+1 需要复制到目标主机上文件
+$ORACLE_HOME/dbs
+$ORACLE_BASE/oradata/$ORACLE_SID
+$ORACLE_BASE/admin/$ORACLE_SID
+$ORACLE_BASE/flash_recovery_area
+
+2 使用scp命令远程拷贝
+scp oracle@141.168.1.11:/u01/app/oracle/oradata/archDemo/* .
+

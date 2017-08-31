@@ -1,0 +1,103 @@
+1 serialize()方法序列化表单元素值：$("form").serialize()
+
+2 ajaxSetup()方法设置全局Ajax默认选项
+	ajaxStart()和ajaxStop()方法是绑定Ajax事件。
+	ajaxStart()方法用于在Ajax请求发出前触发函数，ajaxStop()方法用于在Ajax请求完成后触发函数
+	
+3 表单验证插件——validate：该插件自带包含必填、数字、URL在内容的验证规则，即时显示异常信息，此外，还允许自定义验证规则
+	$("#from").validate(
+	  {
+		  /*自定义验证规则*/
+		  rules: {
+				?
+				?
+				?
+			  }
+		  },
+		  /*错误提示位置*/
+		  errorPlacement: function (error, element) {
+			  error.appendTo(".tip");
+		  }
+	  }
+	);
+4 表单form插件，调用ajaxForm()方法，实现ajax方式向服务器提交表单数据，并通过方法中的options对象获取服务器返回数据
+
+5 图片灯箱插件——lightBox
+$('.divPics a').lightBox({
+	overlayBgColor: "#666", //图片浏览时的背景色
+	overlayOpacity: 0.5, //背景色的透明度
+	containerResizeSpeed: 600 //图片切换时的速度
+})
+
+6 图片放大镜插件——jqzoom
+$(".content a").jqzoom({ //绑定图片放大插件jqzoom
+	zoomWidth: 123, //小图片所选区域的宽
+	zoomHeight: 123, //小图片所选区域的高
+	zoomType: 'reverse' //设置放大镜的类型
+});
+
+7 cookie插件——cookie
+	保存：$.cookie(key，value)；读取：$.cookie(key)，删除：$.cookie(key，null)
+	
+8 搜索插件——autocomplete
+var arrUserName = ["王五", "刘明", "李小四", "刘促明", "李渊", "张小三", "王小明"];
+$("#txtSearch").autocomplete(arrUserName,{
+	minChars: 0, //双击空白文本框时显示全部提示数据
+	formatItem: function (data, i, total) {
+		return "<I>" + data[0] + "</I>"; //改变匹配数据显示的格式
+	},
+	formatMatch: function (data, i, total) {
+		return data[0];
+	},
+	formatResult: function (data) {
+		return data[0];
+	}
+}).result(SearchCallback); 
+function SearchCallback(event, data, formatted) {
+	$(".tip").show().html("您的选择是：" + (!data ? "空" : formatted));
+}
+
+9 右键菜单插件——contextmenu
+10 自定义对象级插件——li  focuscolor插件
+	$("ul").focusColor("red")
+11 自定义类级别插件—— twoaddresult
+	$.addNum(p1,p2) 和 $.subNum(p1,p2)：计算两数值相加和相减
+12 拖曳插件——draggable
+$("#x").draggable({
+   containment:"parent",//在父级元素内拖拽
+   axis:"x"//只能沿着X轴方向
+});
+
+13 放置插件——droppable：将拖曳后的任意元素放置在指定区域中
+14 拖曳排序插件——sortable
+$("ul").sortable({
+	delay:2,
+	opacity:0.35
+})
+15 面板折叠插件$("#accordion").accordion()	
+16 选项卡插件——tabs
+$("#tabs").tabs ({
+	//设置各选项卡在切换时的动画效果
+	fx: { opacity: "toggle", height: "toggle" },
+	event: "mousemove" //通过移动鼠标事件切换选项卡
+})	
+
+17 对话框插件——dialog
+
+18菜单工具插件——menu，可以通过<ul>创建多级内联或弹出式菜单，支持通过键盘方向键控制菜单滑动，允许为菜单的各个选项添加图标
+$("#menu").menu();
+19 工具提示插件——tooltip
+$("#name").tooltip({
+	show: {
+		effect: "slideDown",
+		delay: 350
+	},
+	hide: {
+		effect: "explode",
+		delay: 350
+	},
+	position: {
+		my: "left top",
+		at: "left bottom"
+	}
+});

@@ -1,0 +1,8 @@
+$("input:eq(0)").click(function(){
+	$("p").attr("title":"welcome","hello":"world");
+});
+
+
+$("p").attr("hello");//获取属性的值
+
+$("p").removeAttr("title");//删除属性

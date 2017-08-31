@@ -1,0 +1,132 @@
+﻿1 sql书写规范：
+	大小写不敏感，但单引和双引内的大小写是敏感的
+	可以分行书写，但关键字不能被跨行书写，单引内也不要跨行书写。
+
+2 字符串函数：
+	upper：转换成大写
+	lower：转换成小写
+	initcap：首字母大写
+	concat(a,b):连接a和b
+	length:按字数取长度，在sqlplus运行为计算字符长度
+		select length('张三') from dual;--2
+	lengthb:按字符取长度
+		select lengthb('张三') from dual;--4
+	lengthc:按unicode取长度
+		select lengthc('张三') from dual;--2
+	substr(str,m,n):m表示从第几个字符开始[从1开始算]，如果为负表示从后面第几个开始，n表示取n个，如果为空表示截到最后
+	instr(colname,'str'):字串在母串的位置，0表示没有找到
+	trim():截断字符串
+		select trim(leading 'a' from 'aaaaabababaaaaa') from dual;--截断前置连续的a，bababaaaaa
+		select trim(trailing 'a' from 'aaaaabababaaaaa') from dual;--截断后置连续的a，aaaaababab
+		select trim('a' from 'aaaaabababaaaaa') from dual;--截断连续的a，babab
+	lpad,rpad:左右铺垫，20是总长度，'-'是用来铺垫的字符串
+		select lpad(ename,20,'-') ename,rpad(ename,20,'-') ename from emp;
+	replace(colname,'a','b'):将列中的a替换成b
+
+3 数字函数
+	round：四舍五入，以小数点位核心，2是小数点后两位，0可以不写，表示取整，-1表示小数点前一位
+		SELECT ROUND(45.923,2), ROUND(45.923,0), ROUND(45.923,-1) FROM DUAL;--45.92，46，50
+	trunc：截断
+	ceil:向上取整
+	floor：向下取整
+	abs(-25):取绝对这
+	mod(76,34):取余
+	
+	数字转字符串
+	to_char(345,'9999.0000')
+	to_char(235,'$99999.0000')
+	to_char(235,'l99999.0000') 或 to_char(235,'L99999.0000')
+	to_char(232345,'999g999d0000')：g是千分位，d是小数点
+	to_char(232,'xxxxx')：10转换成16进制，其中xxxxx的位数要足够，不然报错，你就多写几个，足够大就可以。
+	to_number('e8','xxxxx')：16转换成10进制
+	
+4 日期函数
+	查看当前的日期格式：
+	select * from nls_session_parameters where parameter='NLS_DATE_FORMAT';
+	
+	重新设定session日期格式:
+	alter session set NLS_DATE_FORMAT='yyyy/mm/dd:hh24:mi:ss';
+	alter session set NLS_DATE_FORMAT='DD-MON-RR';
+	
+	months_between(date1,date2):date1-date2
+	
+	add_month(sysdate,6):6个月后
+	
+	next_day(date,char):下一个..的日期,可以直接写friday或星期五(与nls_territory=america有关)，也可以写数字，1表示星期天，2表示星期一。。。
+		select next_day(sysdate,'friday') from dual;
+		select next_day(sysdate,6) from dual;--下一个星期五
+		
+	last_day(date):该日期的月底
+		select last_day(sysdate) from dual;
+	
+	日期的进位和截取，round和trunc得到的结果是一样的
+		select hiredate,round(hiredate,'mm') ,round(hiredate,'month') from emp;
+		select hiredate,round(hiredate,'yyyy') ,round(hiredate,'year') from emp;
+		select hiredate,trunc(hiredate,'mm') ,trunc(hiredate,'month') from emp;
+		select hiredate,trunc(hiredate,'yyyy') ,trunc(hiredate,'year') from emp;
+	
+	两位数表示年：yy的世纪和当前世纪一致，rr表示0-49表示为当前世纪，50-99就是上世纪
+		select to_char(to_date('98','yy'),'yyyy') from dual;--2098
+		select to_char(to_date('98','rr'),'yyyy') from dual;--1998
+		
+5 关于null的函数
+	nvl(a,b)
+	nvl2(a,b,c):a为非空返回b，a为空返回c
+	nullif(a,b):如果a和b相同，返回null，否则返回a
+	coalesce(null,null,5,null,24,null)：返回第一个非null的值
+	
+6 分支函数
+	case when：
+	SELECT ename, job, sal,
+		CASE job WHEN 'CLERK' THEN 1.10*sal
+				 WHEN 'SALESMAN' THEN 1.15*sal
+				 WHEN 'ANALYST' THEN 1.20*sal
+				 ELSE sal END "REVISED_SALARY"
+		FROM emp;
+	decode:
+		SELECT ename, job, sal,
+				decode(job ,'CLERK' , 1.10*sal
+						   ,'SALESMAN' , 1.15*sal
+						   ,'ANALYST' , 1.20*sal
+						   , sal ) "REVISED_SALARY"
+		FROM emp;
+		
+7 约束
+	not null：alter table t1 modify(dname not null);
+	unique：alter table t1 add constraint u_dname unique (dname);
+	check：alter table t1 add constraint check_mail check (length(mail)>4);
+	primary key：alter table t1 add constraint pk_t1_mail primary key (mail) ;
+	foreign key:alter table e add constraint fk_e foreign key (deptno) references d(deptno) ;
+	
+	--删除约束
+	Alter table ### drop constraint ****[cascade];
+	
+8 集合操作
+	union all：结果集合并，不排序，不去掉重复行
+	union：结果集合并，排序，去掉重复行
+	intersect:将结果集共有部分显示，排序，去掉重复行
+	minus：前者有，后者没有的部分显示，排序，去掉重复行
+	
+9 递归start with connect by prior 的使用
+	select empno,ename,mgr from emp start with (ename='SMITH') connect by prior mgr=empno;
+	当前查询的mgr等于子查询的empno的记录
+	select empno,ename,mgr from emp start with (ename='BLAKE') connect by mgr= prior empno;
+	当前查询的empno等于子查询的mgr的记录
+	
+10 高级DML语言
+	--emp查出的每一行记录插入到e1和e2表对应的列上
+	insert all
+	into e1 values(ename,sal,hiredate)
+	into e2 values(ename,deptno,mgr)
+	select ename,sal,hiredate,deptno,mgr
+	from emp where deptno=10;
+	
+	--一行只能给一张表，即使两个表的条件都符合
+	insert first
+	when sal>3000 then
+	into e1 values(ename,sal,hiredate)
+	when sal>2000 then
+	into e2 values(ename,deptno,mgr)
+	select ename,sal,hiredate,deptno,mgr
+	from emp ;
+	

@@ -1,0 +1,16 @@
+$(function(){
+	var v1 = $("body").children();
+	alert(v1.length);
+
+	for(var i=0;i<v1.length;i++){
+		alert(v1[i].innerHTML);
+	}
+});
+
+
+
+$(function(){
+	var v1 = $("p").next();
+	var v2 = $("p").pre();
+	var v3 = $("p").sublings();//获得所有的兄弟节点
+});

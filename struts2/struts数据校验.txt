@@ -1,0 +1,75 @@
+action 类继承 ActionSupport 类
+
+重写validate方法
+
+在此方法中 addActionError("error");//添加action 范围的错误信息
+addFieldError("fieldname(属性名字)","error");//添加field范围的错误信息
+
+** （在action类中 先执行类型转换，再执行validate方法，再执行execute方法）
+
+
+** <%@ taglib prefix="s" uri="/struts-tags"%>//struts 的标签库
+在jsp页面上加上<s:actionerror cssStyle="color:red;"/> 就能把action范围的错误在页面上显示出来
+加上 <s:fielderror cssStyle="color:red"></s:filederror>
+
+
+struts表单
+<s:form action="" theme=">//会以表格的形式呈现，出现错误后之前输入的信息会保留在页面上，并且会
+自动在页面上输出field级别的错误，method的默认值是post
+	<s:textfield name="username" lable="username"></s:textfield>
+	<s:password name="password" lable="password"></s:textfield>
+</s:form>
+
+
+
+当theme="simple"是，就不会以表格的形式呈现，lable属性也不会显示出来，可以更自由的定义格式了，出现错误后
+会保留之前输入的数据，错误信息也不会自动输出到页面上
+
+
+**（字符串与null之间比较可以直接用 == ，字符串与字符串之间用equals）
+
+执行流程总结：
+1 首先进行类型转换
+2 然后进行输入校验（执行validate方法）
+3 如果在上述过程中出现了任何错误，都不会再去执行execute方法，会转向struts.xml中该action的
+  名为input的result所对应的页面
+
+
+调用：this.clearActionErrors();
+	this.clearFieldErrors();
+	this.clearErrors();
+可以删除错误信息，执行execute方法
+
+
+
+
+ActionSupport类的addActionError()方法的实现：首先创建一个ArrayList对象，然后将错误消息添加
+到这个list中
+
+当调用getActionError（）方法返回Action级别的错误信息列表时，返回的实际上是集合的一个副本而不是集合本身，
+因此对集合副本调用clear（）方法清除的依旧是副本中的元素而非原集合中的元素，此时原集合的内容没有受到任何的
+影响。换句话说，Action级别的错误对开发者来说是只读的
+
+
+fieldError级别的错误信息底层是用LinkedHashMap实现的，该Map的key是String类型，value是List<String>
+类型，这就表示一个FieldName可以对应多条错误信息，这些错误信息都放置在LIst<String>集合当中
+
+struts自定义方法校验:
+命名规则：validateMyExecute(){}
+
+对于通过Action的method属性所指定的自定义方法，其对应的自定义输入校验方法名为validateMyExecute(
+假定自定义的方法名为myExecute())
+
+如果Action中存在自定义的execute方法，首先会执行自定义的execute 方法所对应的validate方法，
+然后再去执行validate方法，执行完后如果出现了任何错误都会转向input
+
+
+
+自定义的struts错误（field级别的错误）提示的属性文件：Action类的名字.properties 
+invalid.fieldvalue.age(action的属性名字)=age invalid!
+总结步骤：
+1 新建一个以Action名字命名的properties文件
+2 然后在该属性文件中指定每一个出错字段的错误消息 
+  格式： invalid.fieldvalue.age=age invalid!
+
+

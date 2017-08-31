@@ -1,0 +1,43 @@
+编写异常类：UsernameException extends Exception
+
+private String message;
+
+//带参的构造方法
+
+public UsernameException(String message){
+	super(message);
+	this.message = message;
+}
+
+在action类中修改execute方法//validate 主要是判断没有业务逻辑的验证所以放在execute中
+if(!"hello".equals(username)){
+	throw new UsernameExeception("username invalid");
+}
+
+在struts.xml 的action下添加标签
+<exception-mapping result="usernameInvalid" exception="com.UsnameExcepton"></>
+<result name="usernameInvalid">/error.jsp</>
+
+
+
+
+全局的异常处理：局部的会先于全局被找到
+
+
+
+全局的异常结果：在action的上方加入
+
+<global-results>
+	<result name="usernameInvalid">/error.jsp</>
+</global-results>
+
+
+全局异常：在action的上方加入
+<global-exception-mappings>
+	<exception-mapping result="usernameInvalid" exception="com.UsernameException"></>
+</global-exception-mappings>
+
+
+
+综述：
+ 我们既可以在action中定义异常和结果，也可以定义全局的异常和结果，全局的异常和结果可以被所有的action共享

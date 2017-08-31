@@ -1,0 +1,72 @@
+1、SCN的意义？system change number
+	时间
+	先后、新旧
+select dbms_flashback.get_system_change_number, 
+SCN_TO_TIMESTAMP(dbms_flashback.get_system_change_number) from dual;
+
+2、常见的SCN
+	控制文件
+		系统SCN
+			select checkpoint_change# from v$database;
+		文件SCN
+			select name,checkpoint_change# from v$datafile;
+		结束SCN
+			select name,last_change# from v$datafile;
+		检查点信息
+			增量检查点并不会去更新数据文件头，以及控制文件中数据库SCN以及数据文件条目的SCN信息，而只是每3秒由CKPT进程去			更新控制文件中的low cache rba信息，也就是检查点的位置。
+
+select CPDRT,CPLRBA_SEQ||'.'||CPLRBA_BNO||'.'||CPLRBA_BOF "Low  
+RBA",CPODR_SEQ||'.'||CPODR_BNO||'.'||CPODR_BOF "On disk RBA",CPODS,CPODT,CPHBT from x$kcccp;
+
+CPDRT列是检查点队列中的脏块数目. 
+CPODS列是on disk rba的scn 
+CPODT列是on disk rba的时间戳 
+CPHBT列是心跳
+
+	数据文件头部
+		开始SCN
+			select name,checkpoint_change# from v$datafile_header;
+	数据块头部ITL事务槽
+	日志change vector中
+		跑日志、空跑日志
+	回滚段事务表中
+	日志文件头部
+		first、next
+	select recid,sequence#,first_change#,next_change# from v$log_history where rownum<6;
+	select * from v$log;
+	select * from v$archived_log
+3、实例恢复
+	只是需要redo log：active、current
+	实例恢复判断依据
+	演示SCN变化
+
+如果发生了实例崩溃，只需要在日志文件中找到检查点位置(low cache rba)，从此处开始应用所有的重做日志文件，就完成了前滚操作。实例崩溃后，再次启动数据库，oracle会到控制文件中读取low cache rba，这就是检查点位置。从此处开始应用重做日志，应用到on disk rba的位置。on disk rba是磁盘中重做日志文件的最后一条重做记录的rba。
+
+4、fast_start_mttr_target
+
+
+相关操作
+
+select checkpoint_change# from v$database
+
+alter system checkpoint
+
+alter system switch logfile
+
+select name,checkpoint_change# from v$datafile 
+
+
+select name,checkpoint_change# from v$datafile_header
+
+select * from v$log;
+
+begin
+for i in 1..10000 loop
+insert into  t2 values(1,'xkj');
+commit;
+end loop;
+end;
+select * from t2
+
+alter system flush buffer_cache
+	

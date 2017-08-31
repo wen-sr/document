@@ -1,0 +1,153 @@
+1、Undo表空间及管理方式
+
+
+	show parameter undo_tablespace
+	Undo段
+		select * from v$rollname;
+	select SEGMENT_NAME,BLOCKS,EXTENTS from dba_segments where SEGMENT_NAME='_SYSSMU1$';
+	select SEGMENT_NAME,TABLESPACE_NAME,EXTENT_ID,FILE_ID,BLOCK_ID,BLOCKS from dba_extents where SEGMENT_NAME='_SYSSMU1$';
+	select owner, segment_name, tablespace_name from dba_rollback_segs;
+	show parameter undo
+	select name from v$parameter where name like '%undo%';
+	undo_management
+
+	UNDO表空间占用空间情况以及数据文件存放位置
+	select file_name,bytes/1024/1024 from dba_data_files
+	where tablespace_name like '%UNDOTBS%';
+
+	undo的三个作用
+		读一致性，构造CR块
+		回滚
+		实例恢复
+
+	undo_retention
+	alter tablespace undotbs1 retention guarantee
+	alter tablespace undotbs1 retention noguarantee
+
+	Undo段中区的状态
+	free
+	expired
+	inactive
+	active
+
+	显示UNDO区信息
+	SELECT extent_id, bytes, status FROM dba_undo_extents
+	WHERE segment_name='_SYSSMU1$';
+
+
+
+2、图解一个事务的操作流程
+	Undo段的组成：段头、回滚块
+		事务ID
+		select xid,xidusn,xidslot,xidsqn,ubablk,ubafil from v$transaction;
+		事务表
+			undo段的第一个数据块，每一个回滚段最多可以47个事务
+		回滚段的段头块
+		select * from v$rollname;
+		select header_block,header_file from dba_segments where segment_name='_SYSSMU1$';
+		alter system dump undo header '_SYSSMU1$';//转储回滚段头
+		alter system dump datafile 5 block 4308;//转储回滚段数据块
+	事务槽：xid、uba
+
+
+3、图解Oracle IMU机制
+	select * from v$sysstat where name like '%IMU%';
+4、图解Oracle private redo strands机制
+
+查看回滚段的使用情况，哪个用户正在使用回滚段的资源
+select s.username, u.name from v$transaction t,v$rollstat r,
+v$rollname u,v$session s where s.taddr=t.addr and
+t.xidusn=r.usn and r.usn=u.usn order by s.username;
+
+检查UNDO Segment状态
+select usn,xacts,rssize/1024/1024/1024,hwmsize/1024/1024/1024,shrinks
+from v$rollstat order by rssize;
+
+
+
+确定当前例程正在使用的UNDO表空间
+Show parameter undo_tablespace
+
+显示数据库的所有UNDO表空间
+SELECT tablespace_name FROM dba_tablespaces WHERE contents='UNDO';
+
+显示UNDO表空间统计信息
+SELECT TO_CHAR(BEGIN_TIME,'HH24:MI:SS') BEGIN_TIME,
+TO_CHAR(END_TIME,'HH24:MI:SS') END_TIME,UNDOBLKS
+FROM V$UNDOSTAT;
+
+显示UNDO段统计信息
+SELECT a.name, b.xacts, b.writes, b.extents
+FROM v$rollname a, v$rollstat b
+WHERE a.usn=b.usn;
+
+显示活动事务信息
+Col username format a10
+Col name format a10
+SELECT a.username, b.name, c.used_ublk
+FROM v$session a, v$rollname b, v$transaction c
+WHERE a.saddr=c.ses_addr AND b.usn=c.xidusn
+AND a.username='HR';
+
+
+
+
+
+
+
+V$ROLLSTAT中的常用列
+
+USN  		Rollback segment number 
+EXTENTS 	Number of extents in the rollback segment 
+RSSIZE  	Size (in bytes) of the rollback segment. 
+WRITES  	Number of bytes written to the rollback segment 
+XACTS 		Number of active transactions 
+GETS 		Number of header gets 
+WAITS 		Number of header waits 
+OPTSIZE 	Optimal size of the rollback segment 
+HWMSIZE 	High-watermark of rollback segment size 
+SHRINKS 	Number of times the size of a rollback segment decreases 
+WRAPS 		Number of times rollback segment is wrapped 
+EXTENDS 	Number of times rollback segment size is extended 
+AVESHRINK 	Average shrink size 
+AVEACTIVE 	Current size of active extents, averaged over time. 
+STATUS 		Rollback segment status: 
+			ONLINE
+			PENDING OFFLINE
+			OFFLINE
+			FULL
+CUREXT		Current extent 
+CURBLK		Current block 
+
+
+5、读一致性
+	ORA-01555错误
+
+6、undo advisor
+	EM
+
+7、事务槽ITL
+	默认是1
+	最大255（从Oracle10g开始不能更改）
+	select INI_TRANS,MAX_TRANS from dba_tables where table_name='T2'
+	事务槽争用
+
+create table t10(id number(5),name char(2000));
+insert into t10 values(1,'aa');
+insert into t10 values(2,'bb');
+insert into t10 values(3,'bb');
+insert into t10 values(4,'cc');
+insert into t10 values(5,'dd');
+commit;
+select dbms_rowid.rowid_relative_fno(rowid),dbms_rowid.rowid_block_number(rowid),id from t10;
+update t10 set name='abcd' where id=1;
+select ubafil,ubablk,xidusn,xidslot,xidsqn,start_scnb from v$transaction;
+select * from v$rollname ;
+alter system dump undo header '_SYSSMU8$';
+alter system dump datafile 1 block 62130; // 回滚块，数据块
+
+
+查看当前会话的进程编号
+select spid from v$process where addr in (select paddr from v$session where 
+	sid=(select sid from v$mystat where rownum=1));
+8、提交方式

@@ -1,0 +1,65 @@
+﻿1.利用AOP实现异常处理，将异常信息写入文件
+方面:将异常写入文件
+切入点:作用到所有Action业务方法上
+ within(org.tarena.action..*)
+通知:异常通知<aop:after-throwing>
+2.Log4j日志记录工具
+ Log4j主要用于日志信息的输出。可以将信息分级别按不同方式和格式输出。
+ 1)Log4j主要有以下3部分组件构成
+  a.日志器（Logger）
+   负责控制消息输出，提供了各种不同级别的输出方法
+  b.输出器（Appender）
+   负责控制消息输出的方式，例如输出到控制台、文件输出等
+  c.布局器（Layout）
+   负责控制消息的输出格式
+ 2)log4j使用方法
+   a.引入log4j.jar
+   b.在src下添加log4j.properties
+    （定义了消息输出级别、采用哪种输出器、采用哪种布局器）
+   c.Java代码中利用日志器不同的方法输出消息
+ 
+3.Spring注解配置
+  注解技术从JDK5.0推出，之后很多框架开始提供注解配置形式。
+  注解只能用在类定义前、方法定义前、成员变量定义前。
+
+  Spring框架从2.5版本开始支持注解配置。注解配置优点简单、快捷。
+  1）组件扫描功能
+   Spring可以按指定的包路径扫描内部的组件，当发现组件类定义前有以下注解标记，会将该组件纳入Spring容器中。
+   a.@Component (其他组件)
+   b.@Controller (Action组件)
+   c.@Service  (Service组件)
+   d.@Repository  (DAO组件)
+
+  组件扫描使用方法如下：
+   --在applicationContext.xml中开启组件扫描配置
+<context:component-scan 
+  base-package="包路径"/>
+   --在要扫描的组件的类定义前使用上述注解标记即可
+  上述标记将组件扫描到容器后，id属性默认是类名首字母小写。如果需要自定义id值，可以使用@Repository("自定义id值").
+  默认采用singleton模式创建Bean对象，如果需要改变，可以使用@Scope("prototype")定义
+
+  2)如果容器中两个Bean对象之间具有注入关系，可以采用下面注解标记
+   a.@Resource 
+    默认按类型匹配注入，需要指定名称可以@Resource(name="需要注入的bean对象id值")
+   b.@Autowired
+    默认按类型匹配注入，需要指定名称注入，可以采用下面格式
+   @Autowired
+   @Qualifier("hibernateCostDao")
+ 
+  3)AOP注解
+   AOP注解配置的使用方法：
+   --在applicationContext.xml中启用AOP注解
+    <aop:aspectj-autoproxy/>
+   --在方面组件中，使用下面注解标记
+    首先使用@Component将组件扫描到Spring容器
+    然后使用@Aspect将组件定义为方面组件
+    之后定义一个空方法，在方法前使用@Pointcut定义切入点表达式
+    最后在方面组件的处理方法前使用@Around,@Before,@AfterReturning,
+@AfterThrowing,@After
+
+
+
+
+
+
+

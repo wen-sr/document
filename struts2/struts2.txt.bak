@@ -1,0 +1,62 @@
+Struts2
+1.Struts2的核心组件和基本流程
+1）核心组件：FC\VS\Action\Result\Interceptor\Tags
+2）基本流程:
+   请求发给FC；
+   根据配置信息确定要调用的Action；
+   创建VS，创建Action，Action放到VS栈顶；
+   调用Action，根据输入属性计算输出属性；
+   调用Result，将当前VS中的输出数据按照某种格式
+   输出，也可以转发到JSP等View组件，由这些View组件
+   来输出；
+   在调用Action之前（之后）调用Interceptor，做一些
+   通用的或附加的功能；
+   如果使用dispatcher类型的Result转发到JSP组件，在
+   JSP组件中可以使用Tags访问VS，展现数据。
+2.Struts2中Result原理和常用的Result
+  1）dispatcher 转发至JSP
+  2）redirectAction 重定向到Action
+     参数：actionName
+           要定向到的Action的name值
+           namespace，
+           要定向到的Action所在包的命名空间
+  3）stream 输出二进制信息
+     参数：inputName
+           OGNL表达式——一个输入流对象，要输出数据的
+           来源
+           contentType——用于设置相应中contentType
+  4）json 输出JSON字符串
+     参数：root
+           OGNL表达式——要做成JSON字符串的对象
+3.Struts2中Interceptor的原理和常用的Interceptor
+  1）会写
+  不调用，不调用Action（也包括后面的Interceptor）
+  return的String决定了最后的Result；
+  调用ai.invoke()，调用Action，也包括Result
+  return的内容无效；
+  调用ai.invokeActionOnly()，调用Action（不包括后面
+  的Interceptor和Result）
+  return的String决定了最后的Result；
+  
+  调用ActionInvocation对象的getStack方法获取VS；
+  调用ServletActionContext的静态方法获取Servlet API
+  2）会配
+  3）常见的Interceptor
+  ParametersInterceptor
+  FileUploadInterceptor
+4.Struts2中常用的标记
+  1）<s:property value=""/>，${}为什么可以用
+  2）判断和循环
+  3）UI
+5.Struts2中Action的设计经验
+  1）配置文件的拆分
+  2）控制好Action类的粒度
+  3）控制Action和Servlet API的耦合度，Aware
+     可以封装拦截器
+  4）适当用通配符
+  5）根据输入算输出
+6.Struts2中如何处理异常
+  M V C
+7.Struts2中如何实现国际化
+  i18n
+

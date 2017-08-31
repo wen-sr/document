@@ -1,0 +1,72 @@
+tomcat的核心组件：
+	catalina:servlet container
+	coyote:http connection
+	jasper:JSP engine
+	
+1 安装jdk
+	查看是否已经安装jdk
+	rpm -qa | jdk*
+	卸载已经安装的openjdk
+	sudo yum remove java-*
+	
+	安装jdk
+	chmod 777 jdk-7u80-linux-x64.rpm 
+	rpm -ivh jdk-7u80-linux-x64.rpm 
+	查看jdk安装目录（/usr/java/jdk*）
+	rpm -qa | grep jdk
+	
+2 配置环境变量
+	vi /etc/porfile.d/java.sh
+	export JAVA_HOME=/usr/java/latest
+	export PATH=$JAVA_HOME/bin:$PATH
+	export CLASSPATH=.:$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+	
+	立即生效。
+	source /etc/profile.d/java.sh
+
+3 解压tomcat至/usr/local
+	ln -sv apache-tomcat-8.5.15 tomcat
+4 配置tomcat
+	chmod -R 777 /usr/local/tomcat
+	vi /etc/profile.d/tomcat.sh
+	export CATALINA_HOME=/usr/local/tomcat
+	export PATH=$CATALINA_HOME/bin:$PATH
+	
+	. /etc/profile.d/tomcat.sh
+
+5 配置UTF-8字符集
+	进入tomcat安装的conf文件夹，编辑servre.xml
+	找到配置8080默认端口的节点位置(Connector)，在节点属性末尾增加:URIEncoding="UTF-8"
+	<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" URIEncoding="UTF-8"  />
+		
+6 启动tomcat
+	进入bin目录，执行./startup.sh
+	查看监听端口：
+	ss -tnl  
+	ss -tnlp
+	
+配置文件：
+	server.xml : 主配置文件
+	conf/context.xml:为各webapp提供默认配置
+	web.xml:为所有webapp提供默认配置
+	tomcat-user.xml : 用户认证帐号和密码配置文件
+	catalina.policy:当使用-sexurity选项启动tomcat时会读取此文件运行配置
+	catalina.properties:java属性的定义文件，用于设定类加载器路径等，以及一些JVM性能相关的调优参数
+	logging.properties:日志相关的配置信息
+
+	
+	
+	
+部署：
+	归档格式
+	.war:webapp
+	.jar:EJB的类
+	.rar:资源适配器
+	.ear:企业级应用程序
+	
+	
+	
+	
+	

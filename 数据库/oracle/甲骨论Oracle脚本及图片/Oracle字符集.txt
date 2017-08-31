@@ -1,0 +1,64 @@
+1、字符集的作用和含义
+	字符编码
+	使用场合
+		数据库字符集
+		(1)用来存储CHAR, VARCHAR2, CLOB, LONG等类型数据
+		(2)用来标示诸如表名、列名以及PL/SQL变量等
+		(3)用来存储SQL和PL/SQL程序单元等
+		国家字符集
+		(1)用以存储NCHAR, NVARCHAR2, NCLOB等类型数据
+2、客户端OS字符集、NLS_LANG设置、服务器端OS字符集、Oracle数据库字符集
+	字符集之间的关系
+	正确设置字符集
+3、字符集出现问题以后的判断流程
+	存储的是错误的字符编码
+	存储的是正确的字符编码
+4、locale、locale -a、chcp
+
+
+5、字符集命名
+Oracle的字符集命名遵循以下命名规则:
+<Language><bit size><encoding>
+即:  <语言><比特位数><编码>
+比如: ZHS16GBK表示采用GBK编码格式、16位（两个字节）简体中文字符集
+
+US7ASCII
+zhs16cgb231280
+AL32UTF8
+AF16UTF16
+ZHS16GBK
+utf8
+
+超集	严格超集
+
+NLS_LANG=<language>_<territory>.<client character set> 
+    Language:显示oracle消息,校验，日期命名
+    Territory：指定默认日期、数字、货币等格式
+    Client character set：指定客户端将使用的字符集
+    例如：NLS_LANG=AMERICAN_AMERICA.US7ASCII  
+    AMERICAN是语言，AMERICA是地区，US7ASCII是客户端字符集
+
+Oracle提供若干NLS参数定制数据库和用户机以适应本地格式，例如有NLS_LANGUAGE,NLS_DATE_FORMAT,NLS_CALENDER等，可以通过查询以下数据字典或v$视图查看。
+NLS_DATABASE_PARAMETERS--显示数据库当前NLS参数取值，包括数据库字符集取值
+NLS_SESSION_PARAMETERS--显示由NLS_LANG 设置的参数，或经过alter session 改变后的参数值（不包括由NLS_LANG 设置的客户端字符集）
+NLS_INSTANCE_PARAMETE--显示由参数文件init<SID>.ora 定义的参数V$NLS_PARAMETERS--显示数据库当前NLS参数取值
+
+
+select * from nls_session_parameters
+select * from nls_database_parameters
+select userenv('language') from dual;
+select nls_charset_name(to_number('0354','xxxx')) from dual;
+echo $NLS_LANG
+select to_char(nls_charset_id('ZHS16GBK'), 'xxxx') from dual;
+
+
+insert into t2 values(1,'甲骨论');
+
+select * from t2;
+
+select id,dump(name,1016) from t2;
+commit;
+
+insert into t2 values(3,'中国');
+
+select * from V$NLS_VALID_VALUES;

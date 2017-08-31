@@ -1,0 +1,62 @@
+1、Oracle日志原理
+	史记讲解法
+	日志记录方式
+2、实际日志产生过程
+3、归档模式
+	alter database archivelog
+	ARCHIVE LOG LIST
+	SELECT log_mode FROM v$database
+	alter database noarchivelog
+	ALTER SYSTEM ARCHIVE LOG CURRENT
+	ALTER SYSTEM ARCHIVE LOG ALL
+	ALTER SYSTEM SET LOG_ARCHIVE_MAX_PROCESSES=3;
+	alter system set log_archive_dest = '/u01/app/oracle/archivelog1' scope = spfile;
+	alter system set log_archive_duplex_dest = '/u01/app/oracle/archivelog2' scope = spfile;
+	alter system set log_archive_dest_1 = 'LOCATION=/u01/app/oracle/archivelog3';
+	alter system set log_archive_dest_2 = 'SERVICE=standby1';
+	alter system set log_archive_format = 'arch_%t_%s_%r.arc';
+
+	col dest_name format a20;  
+	col destination format a30;
+	select dest_name,status,archiver,destination,log_sequence,reopen_secs,transmit_mode,process
+	from v$archive_dest;
+
+	select name,sequence#,registrar,standby_dest,archived,status from v$archived_log;
+
+	v$archived_log         -->从控制文件中获得归档的相关信息
+	v$archive_dest         -->归档路径及状态
+	v$log_history          -->控制文件中日志的历史信息
+	v$database             -->查看数据库是否处于归档状态
+	v$archive_processes    -->归档相关的后台进程信息
+
+	select * from v$logfile;
+	select member,bytes/1024/1024 from v$log a,v$logfile b
+  	where a.group#=b.group#
+	select NAME,STATUS from v$archived_log;
+
+4、如何确保已经提交的事务不会丢失
+5、LGWR绕过OS缓存直接写入磁盘，但是绕不过存储的写缓存
+6、Log buffer大小设置
+	9i以前，一般是3M
+	在10g中ORACLE会自动调整它的值，他遵循这样一个原则，'Fixed SGA Size'+ 'Redo Buffers'是granule size 的整数倍
+	select * from v$sgainfo where name in ('Fixed SGA Size','Redo Buffers','Granule Size');
+	--在10.2.0.3 中Log Buffer 默认值是14M，在10.2.0.4中，默认值是15M
+	select * from v$version where rownum<2;
+8、LGWR触发条件:Write-Ahead-Log：日志写入优先
+	1.用户提交 
+	2.有1/3重做日志缓冲区未被写入磁盘 
+	3.有大于1M的重做日志缓冲区未被写入磁盘
+	4.每隔3秒钟
+	5.DBWR需要写入的数据的SCN大于LGWR记录的SCN，DBWR触发LGWR写入
+
+9、LOG优化建议
+	在OLTP 系统上，REDO LOG 文件的写操作主要是小型的，比较频繁，一般的写大小在几K，而每秒钟产生的写IO 次数会达到几十次，数百次甚至上千次。因此REDO LOG文件适合存放于IOPS 较高的转速较快的磁盘上，IOPS 仅能达到数百次的SATA 盘不适合存放REDO LOG 文件。另外由于REDO LOG 文件的写入是串行的，因此对于REDO LOG文件所做的底层条带化处理，对于REDO LOG 写性能的提升是十分有限的。
+
+10、REDO LOG 切换的时间应该尽可能的不低于10-20 分钟
+select to_char(FIRST_TIME,'yyyy-mm-dd hh24:mi:ss') f_time,SEQUENCE# from v$log_history
+
+11、日志相关的一些操作
+alter database add logfile group 5 '/opt/oracle/oradata/dbtest/redo05_1.log' SIZE 10M
+alter database add logfile member '/opt/oracle/oradata/dbtest/redo04_3.log' to group 4
+alter database drop logfile group 5
+alter database drop logfile  ('/opt/oracle/oradata/dbtest/redo05_1.log','/opt/oracle/oradata/dbtest/redo05_2.log')

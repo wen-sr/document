@@ -1,0 +1,20 @@
+1 bash变量：
+	
+	查看所有变量：set
+	
+	自定义变量：
+	定义变量：x=6,name="jie cao"
+	调用变量：echo $x
+	连接(叠加)：x="$x"456
+	删除变量：unset x
+	
+	环境变量：
+	查看：env
+	export y=9
+	
+	语系变量：
+	locale
+	LANG=zh_CN.utf-8
+	cat /etc/sysconfig/i18n
+	
+	

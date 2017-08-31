@@ -1,0 +1,28 @@
+Error: Breaking change: extract now only takes a single argument. Either an options object *or* the loader(s).
+Example: if your old code looked like this:
+    ExtractTextPlugin.extract('style-loader', 'css-loader')
+
+You would change it to:
+    ExtractTextPlugin.extract({ fallbackLoader: 'style-loader', loader: 'css-loader' })
+
+The available options are:
+    loader: string | object | loader[]
+    fallbackLoader: string | object | loader[]
+    publicPath: string
+
+	
+	
+	需要卸载原来的包：
+	npm uninstall extract-text-webpack-plugin --save-dev
+	安装2.0包：
+	npm install --save-dev extract-text-webpack-plugin@2.0.0-beta.4
+	
+	然后，将loader的格式改成：
+	loaders :[
+		{
+			test : /\.css$/, 
+			loader: ExtractTextPlugin.extract({ fallbackLoader: 'style-loader', loader: 'css-loader' })
+		}
+	]
+	
+	

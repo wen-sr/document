@@ -1,0 +1,5 @@
+RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
+rd.forward(request,response);
+
+
+可以使用:request.setAttribute("",)

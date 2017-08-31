@@ -1,0 +1,20 @@
+
+1
+HttpServletRequest request = ServletActionContext.getRequest();
+HttpSession session = request.getSession();
+session.setAttribute("hello","world");
+
+在jsp页面上：{sessionScope.hello}
+
+
+2 
+ActionContext actionContext = ActionContext.getContext();
+Map<String, Object> map = actionContext.getSession();//struts里面的session
+Object object = map.get("hello");//world
+
+
+
+
+
+Preparable 接口的作用是让Action完成一些初始化工作，这些初始化工作是放在Preparable接口的
+prepare方法中完成的，该方法会在execute方法执行之前得到调用

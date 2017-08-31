@@ -1,0 +1,76 @@
+1 session 是服务器端的状态管理技术
+  当浏览器访问服务器时，服务器会创建一个Session对象（该对象有一个唯一的id号，称之为sessionId），接下来，服务器在默认的情况下，会使用set-cookie消息头发送该浏览器，浏览器会将这个sessionId保存下来（内存），当浏览器再次访问服务器时，会将这个sessionId使用cookie消息头发送给服务器，服务器依据这个sessionId就可以找到之前创建的session对象
+
+2 如何获得session对象
+  方式一：HttpSession是一个接口
+    HttpSession s = request.getSession(boolean flag);
+    当flag=true时，服务器会检查请求中是否有sessionId，如果没有则创建一个session对象，如果有sessionId，则服务器会依据sessionId查找对应的session对象，如果找到了，则返回，找不到，服务器会创建一个新的session对象
+    当flag为false，服务器会检查请求中是否有sessionId，如果没有，则返回null，如果有sessionId，则服务器会依据sessionId查找对应的session对象，如果找到了则返回，找不到返回null
+  方式二：
+    HttpSession s = request.getSession();
+    等价于 request.getSession(true);
+ 
+3 HttpSession 接口的常用方法
+   String getId()   获得sessionId
+   setAttribute(String name,Object obj)   绑定一个对象到session对象上
+   getAttribute(String name)   获得绑定对象，如果不存在，返回null
+   removeAttribute(String name)   解除绑定
+
+4 session的超时 ： 服务器会把空闲世间过长的session对象删除掉，服务器默认的超时限制一般是30分钟
+ 可以修改tomcat的web.xml文件
+  <session-config>
+	<session-timeout>30</session-timeout>
+  </session-config>
+
+也可以通过编程的方式来修改超时限制
+ session.setMaxInactiveInterval(int seconds);
+
+5 立即删除session
+  session.invalidate()
+
+6 session 案例
+
+  session登录验证：
+    session.setAttribute();
+  验证码
+
+
+7 如果用户禁用了cookie，如果使用session
+  使用url重写来追踪sessionId
+  <a href="some.do"></a>  改为
+  <a href="<%=response.encodeURL("some")%>"></a>
+encodeURL方法会在“some”后面添加sessionId（用于链接、表单提交地址）
+
+response.encodeRedirectURL(String url);(用与重定向)
+如：response.sendRedirect(response.encodeRedirectURL("list.do"));
+
+
+
+
+HttpSession session = request.getSession();
+session.setAttribute("user",user);
+
+
+
+
+
+session 的优点：
+  a session比较安全
+  b session 能保存的数据类型更加丰富（cookie只能保存字符串）
+  c session能够保存的数据大小更大
+  d cookie可以被用户禁止，而session没有这个问题
+
+
+  缺点：
+  a session会将数据放在服务器端，所以对服务器的资源占用比较大，而cookie会将数据保存在浏览器端，对服务器资源的占用没有
+  b session默认情况下，会将sessionId以cookie的方式发送给浏览器，浏览器会将sessionId保存到内存里面，如果浏览器关闭，浏览器发请求时就没有sessionId，服务器端的session对象就找不到了
+
+
+
+
+未登录：
+
+if(null == session.getAttributer("user")){
+	response.sendRedirect("login.jsp");
+	return;
+}

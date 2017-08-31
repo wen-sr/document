@@ -1,0 +1,10 @@
+/etc/pam.d/login
+32Î»£º
+session required /lib/security/pam_limits.so
+
+session required pam_limits.so
+
+64Î»
+session required /lib64/security/pam_limits.so
+  
+session required pam_limits.so

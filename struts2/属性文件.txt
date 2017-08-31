@@ -1,0 +1,10 @@
+在当前包下新建文件
+ 命名：UserAction-conversion.properties
+
+内容：name=value
+
+
+name:要进行类型转换的名字
+value:转换此name的转换器的名字
+
+user=converter.UserConverter

@@ -1,0 +1,71 @@
+1 JQuery的特点：jQuery利用选择器(css中的思想)查找要操作的节点（dom对象），然后将这些节点封装成一个jQuery对象，封装的目的有两个：一是为了兼容不同的浏览器，二是为了简化代码。通过调用jQuery对象的方法或属性来实现对底层的dom对象的操作。
+
+2 jQuery编程的步骤
+  1 引入jquery框架  www.jquery.org   1.4.3
+  2 使用选择器查找要操作的节点（该节点会被封装成jquery对象）
+     var $obj = $("#d1");
+  3 调用jQuery对象的方法或属性
+    $objj.css('font-size','60px');
+
+3 jQuery与dom对象如何相互转换
+  1）dom对象 -->  jQuery对象
+     $obj = $(document.getElementById('d1')):将dom对象转换成jquery对象
+  2）jQuery对象 --> dom对象
+     var $obj = $('#d1') ;
+     var obj = $obj.get(0);
+     或
+     obj = $obj.get()[0];
+
+4 如何同时使用prototype和jQuery
+  1) 先导入prototype.js ,再导入jQuery.js
+  2) 为了避免冲突，可以将jQuery的$函数换一个名字如$a
+     var $a = jQuery.noConflict();
+
+
+
+
+
+
+//ready 方法的作用是当前页面中国的dom加载完毕之后执行参数中的函数
+<script>
+$(document).ready(
+
+	function(){
+		alert("Hello World")
+	}
+);
+</script>
+
+//window.onload=test1;//只能指向一个函数
+
+
+//获得的都是数组对象
+$(document);
+$("a");
+$("#id");//长度为1，只获得第一个
+$("#id")[0];//获得dom
+$("#id").length();//获得的元素个数
+$("#id").css("color","red");$("#id").css("color");//读：一个参数，写，两个参数
+
+
+
+jquery的选择器：
+1 基本选择器 （basic）
+  #id
+  .class
+  element  (div...)
+  selector1,selector2,...selectorn
+  *
+
+2 层次选择器（level）
+  select1 select2：所有子节点
+  select1 >select2:只考虑子节点（忽略孙节点）
+  select1 +select2：下一个兄弟
+  select1 ~select2：下面所有的兄弟
+3 过滤选择器（filter）
+
+	$('.text :hidden').length;//选择class为text元素中的隐藏元素：：从前往后读
+	$('.text:hidden').length;//选择隐藏的class为text的元素：：从后往前读
+
+	
+4 表单选择器（form）

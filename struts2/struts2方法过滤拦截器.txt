@@ -1,0 +1,14 @@
+方法过滤拦截器：可以对指定方法进行拦截的拦截器
+
+自定义的方法过滤拦截器类继承MethodFilterInterceptor类(该类实现了Interceptor接口，并且对init 和 destroy 方法进行了空实现)，实现doIntercept方法
+
+在struts.xml中配置Interceptor,在要使用的action中配置<interceptor-ref name="..." class="...">
+	<param name="includeMethods">execute,myExectue</>//拦截
+	<param name="excludeMethods">aaa</>//不拦截，拦截器不执行
+</interceptor-ref>
+
+
+
+
+在方法过滤拦截器中，如果既没有指定includeMethods参数，也没有指定execludeMethods参数，那么所有的方法都会被拦截，也就是说所有的方法都被认为是includeMethods 的，如果仅仅指定了includeMethods，那么只会拦截指定includeMethods中的方法
+

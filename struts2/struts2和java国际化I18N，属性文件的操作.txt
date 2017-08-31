@@ -1,0 +1,28 @@
+
+Locale[] locales = Locale.getAvailableLocales();
+for(Locale locale : locales){
+	syso(local.getDisplayCountry()+":" + locale.getCountry());//得到本机国家的信息
+//中国 : CN
+	syso(local.getDisplayLanguage()+":"+locale.getLanguage());
+//中文 : zh
+	}
+
+
+
+对于国际化的资源文件，其命名规则是：package_语言名_国家名
+ 比如 package_zh_CN
+
+java中通用的国际化资源文件
+获得资源包 ：ResourceBundle bundle = ResourceBundle.getBundle("base_name(如struts2的package)") ;
+String value = bundle.getString("key");//根据资源文件的key来获得value
+
+
+在资源文件中可以使用参数：
+如：hello:{0}//0表示站位符
+	你好:{0}
+
+新建一个类来操作：
+
+Locale local = Locale.US;
+ResourceBundle bundle = ResourceBundle.getBundle("base_name(如struts2的package)") ;
+String  result = MessageFormat.format(bundle.getString("hello"),new Object[]{"你好"});

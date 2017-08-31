@@ -1,0 +1,86 @@
+是一套简单的计算规则，用于给jsp标签的属性赋值，也可以直接输出
+
+使用：
+ a 访问bean的属性
+    ${user.name} :容器会依次从pageContext，request，session，application中查找（getAttribute）绑定名为user的对象,接下来会调用该对象的getName方法，最后输出执行结果
+    相比于直接写java代码，有两个优点：
+    1 会将null转换成""输出
+    2 如果绑定名称对应的值不存在，不会报null指针异常，会输出""
+    ${sessionScope.user.name} 指定查找范围
+ b ${user["name"]}:意思同上，但是[]里面允许出现变量如
+    ${user[name]}:name为变量，查找绑定名为name的对象
+    []里面允许出现从0开始的下标，访问数组的元素
+
+ c  进行一些简单的计算，计算的结果可以用来给jsp标签的属性赋值，也可以直接输出
+    算术元素   “+” 不能连接字符串，不会做连接操作
+    关系运算   == 相当与equals方法
+    逻辑运算
+    empty运算  ${empty str} //返回true
+       空字符串
+       空集合
+       null
+       找不到值 
+          都为true
+ d 获取请求参数值
+   ${param.username}
+   ${paramValues.city}
+
+
+
+
+jstl 中的几个核心标签
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+  1 if
+    <c:if test="${p.name=='ss'}" var="rs" scope="request">//request.setAttribute("rs",${p.name=="ss"})
+	标签体
+    </c>
+    当test属性值为true，执行标签体的内容，可以为EL表达式
+    var属性用来指定绑定名称
+    scope指定绑定的范围
+  2 choose
+    <c:choose>
+	<c:when test="">
+	</c:when>
+	<c:oterwise>
+	</c:otherwise>
+    </c:choose>
+
+     when 和 oterwise必须要饭到choose标签里才能使用
+  3 forEach
+     <c:forEach var="" items="" varStatus="">
+	
+     </c:forEach>
+     用来遍历集合，其中，items属性用来指定要遍历的集合，可以使用el表达式，var属性指定绑定名，绑定范围是pageContext，绑定值是集合中的某个元素
+	varStatus属性指定绑定名，绑定范围是pageContext，绑定值是一个由容器创建的一个对象，该对象封装了当前迭代的状态，比如，该对象提供了getIndex，geCount方法
+
+
+
+<head>
+	<base href="<%=basePath%>">
+</head>???????????
+
+
+${ param.username }    <>   request.getParameter("username");
+
+${ bean.attribute}    
+
+${ paramValues.fruit[2] }  <>   request.getParameterValues("fruits[2]");
+
+${ sessionScope.user}                    <>  session.getAttribute("user");
+ 
+${ 1 + 2*4 }
+
+｛ username ｝查找顺序Page Request Session Application
+
+
+页面上显示EL表达式转义输出文本：\${}
+
+
+
+
+
+
+
+
+
+

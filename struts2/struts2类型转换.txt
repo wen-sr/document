@@ -1,0 +1,25 @@
+1 struts2 的类型转换，对于8个原生数据类型及Date，String，struts2可以使用内建的类型转换器实现自动转换
+
+2 
+新建converter类 继承（ognl） DefaultTypeConverter 类
+
+	重写convertValue(Map context,Object value,Class toType){
+		if(User.class == toType)//从页面向后台对象转换
+			String[] str = (String[])value;//从页面传入的是数组
+
+			String firstValue = str[0];
+
+			StringTokenizer st = new StringTokenizer(firstValue,";");//按分号分割
+
+			String username = st.nextToken();
+			String password = st.nextToken();
+
+			User user = new User();
+			user.setUsername();
+			user.setPassword();
+			return user;
+		}
+		return null;
+	}
+
+action类中继承（xwork）ActionSupport类（execute 方法中的SUCCESS 来源于此ActionSupport类）

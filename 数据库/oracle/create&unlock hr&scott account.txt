@@ -1,0 +1,24 @@
+﻿1、 下载human_resources.rar
+
+2、 解压到$ORACLE_HOME/demo/schema/human_resources/目录下
+
+3、 在sys或system用户下运行hr_main.sql脚本
+
+4、 输入必要的参数（下面输入仅为举例）
+hr用户密码：hr
+表空间：users
+临时表空间：temp
+sys密码：xxxxxx
+日志生成目录：（Linux为$ORACLE_HOME/rdbms/log）
+
+5、 完成创建后，就可以连接到HR模式了
+
+6 创建scott用户的脚本
+@%oracle_home%\rdbms\admin\utlsampl.sql
+
+解锁scott用户：
+alter user scott account unlock;
+alter user scott identified by tiger;
+
+--查看已解锁的用户
+select * from dba_users;

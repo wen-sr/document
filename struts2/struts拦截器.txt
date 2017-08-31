@@ -1,0 +1,36 @@
+拦截器（interceptor）是struts2的核心，struts2的众多功能都是通过拦截器来实现的
+
+自定义的拦截器必须实现Inerceptor接口
+必须要实现init()【在服务器启动的时候调用】 destroy() intercept(ActionInvocation invocation) 3 个方法
+
+public String intercept(ActionInvocation invocation){
+	String result = invocation.invoke();//往后调用
+	return result;
+}
+
+
+在package中action的上方，配置
+<interceptors>
+	<interceptor name="interceptor1" class="com.TheInterceptor">
+		<param name="hello">world</>//参数name为拦截器类的一个成员变量的名字
+	</interceptor>
+</interceptors>
+
+
+在要使用拦截器的action中result的下方，配置
+<interceptor-ref name="interceptor1"></>
+ *** 当添加了自定义的拦截器后，默认的拦截器将不会起作用，需要手动的在自定义的拦截器后面添加<interceptor-ref name="defaultStack"></>
+
+
+总结步骤：
+1 编写实现Interceptor接口的类
+2 在struts.xml文件中定义拦截器
+3 在action中使用拦截器
+
+
+
+******通常是去继承AbstractInterceptor抽象类，这个类实现了Interceptor接口，并对init和destroy实现了空实现，我们就只需要实现intercept方法。
+
+
+
+

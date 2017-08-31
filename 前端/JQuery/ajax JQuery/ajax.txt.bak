@@ -1,0 +1,103 @@
+Asynchronous javascript and xml
+
+重要对象：XMLHttpRequest
+使用ajax准备向服务器端发送请求：xmlHttpRequest.open("GET","AjaxServlet",true);
+
+属性：
+a onreadystate：ajax对象的readyState属性发生改变，就会产生readyStatechange事件
+b responseText：获得服务器返回的文本数据
+c responseXml：获得服务器返回的xml文档
+d status：获得状态码
+e readyState:一共5个值，01234，表示ajax对象与服务器通讯的状态，其中4表示ajax对象已经获得了服务器返回的所有数据
+
+
+ajax编程步骤
+1 获得ajax对象
+  var xhr = getXhr();
+2 使用ajax对象发请求（get、post）
+  a 发送get请求
+	xhr.open('get','check_username.do?username=zs',true);
+	true:表示异步请求，ajax发送请求时，可以同时在页面做其他的操作
+	false：表示同步请求，ajax发送请求时，浏览器会锁定当前页面，用户只能等待
+	xhr.onreadystatechange=f;
+	xhr.send(null);
+  b 发送post请求
+	xhr.open('post','',trut);
+	xhr.setRequestHeader('content-type','application/x-www-form-urlencoded')
+
+3 编写服务器端的处理程序，跟以前相比，有一点点改变，就是一般不需要返回一个完整的页面，只需要返回部分的数据
+4 编写事件处理函数
+  function f(){
+	if(xhr.readyState == 4){
+		var txt = xhr.responseText;
+
+		dom操作
+	}
+  }
+
+
+编码问题：
+ 1 发get请求，ie浏览器内置的ajax对象会使用gbk对中文参数进行编码，而其他的浏览器会使用utf-8对中文参数进行编码，服务器端默认会用iso-8859-1去解码
+ 因为编码与解码所使用的字符集不一致，所以会出现乱码问题
+ 解决:
+    a 设置服务器使用指定的字符集去解码，修改tomcat的web.xml文件
+    URIEncoding="utf-8":告诉服务器，对于所有的get请求，默认使用UTF-8去家吗
+
+
+
+
+<script>
+var xmlHttpRequest = null;
+function ajaxSubmit(){
+	var v1 = document.getElementById("v1");
+	if(window.ActiveXObject){//IE浏览器
+		xmlHttpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+	}else if(window.XMLHttpRequest){//除IE外的其他浏览器
+		xmlHttpRequest = new XMLHttpRequest();
+	}
+
+	if(null != xmlHttpRequest){
+		//使用ajax准备向服务器端发送请求
+		xmlHttpRequest.open("GET","AjaxServlet?v1="+v1,true);
+
+		//关联好ajax的回调函数(状态改变执行)
+		xmlHttpRequest.onreadystatechange = ajaxCallback(回调函数);
+
+		//真正向服务器发送数据
+		xmlHttpRequest.send(null);//get方式
+
+		//xmlHttpRequest.setRequestHeader("Content-Type","application/x-www-form-urlencoded");//<form enctype="application/x-www-form-urlencoded"></form>
+		//xmlHttpRequest.send("v1="+v1);//post方式
+	}	
+}
+
+function ajaxCallback(){
+	//alert("hello world");
+
+	if(xmlHttpRequest.readyState == 4){
+		if(xmlHttpRequest.status == 200){
+			var responseText = xmlHttpRequest.responseText;
+
+			document.getElementById("div1").innerHTML = responseText;
+		}
+	}	
+}
+
+</script>
+
+
+禁用缓存：
+
+在jsp页面 的头部修改；：
+
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+
+
+在servlet中：
+ response.setHeader("pragma","no-cache");
+ response.setHeader("cache-control","no-cache");
+
+同步请求：ajax对象向服务器发送请求，浏览器会锁定当前页面，用户不能做其他操作
+open('','',false);
+

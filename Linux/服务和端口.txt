@@ -1,0 +1,10 @@
+1 rpm安装的服务
+chkconfig --list
+2 源码包安装的服务
+/usr/local
+
+3 端口
+/etc/services
+
+netstat -tulnp
+netstat -anp 

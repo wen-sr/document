@@ -1,0 +1,45 @@
+1 导入struts2要用的jar包导入
+2 配置web.xml中的filter
+3 编写好struts.xml
+4 MyEclipse -> add hibernate capabilities
+(不要选用hibernate2，copy checked library jars to project folder and add to build-path) -> 下一步
+ new hibernate.cfg.xml -> next ->next not create SessionFactory class
+
+
+
+
+hibernate.cfg.xml  文件 的配置
+
+<proprty name="connection.url">jdbc:mysql://localhost:3306/hibernate</>
+<proprty name="connection.username">root</>
+<proprty name="connection.assword">root</>
+<proprty name="connection.driver_class">com.mysql.jdbc.Driver</>
+<proprty name="dialect">org.hibernate.dialect.MySQL5Dialect</>
+<proprty name="show_sql">true</>
+<mapping source="Person.hbm.xml"></>
+
+创建持久化类
+  1 必须有标识属性
+  2 必须提供一个不带参的构造方法
+
+
+
+获得连接后
+try{
+conn.setAutoCommit(false);
+}catch(exception e){
+	conn.rollback;
+}
+
+在action类中获得request
+
+HttpServletRequest request = ServletActionContext.getRequest();
+
+
+在jsp中使用<%@ taglib prefix="s" uri=""%>
+
+<s:iterator value="#request.list">
+	<tr>
+		<td><s:property value="username"></td>
+	</tr>
+</s:iterator>

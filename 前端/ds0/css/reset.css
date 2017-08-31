@@ -1,0 +1,38 @@
+@charset "utf-8";
+body,h1,h2,h3,h4,h5,h6,div,dl,dt,ul,ol,li,pre,form,input,textarea,p,table,td,img{
+	padding:0;
+	margin: 0;
+}
+
+a {
+	text-decoration:none;
+}
+
+ol,ul,li {
+	list-style: none;
+}
+
+*{
+	font-family:"Microsoft YaHei";
+}
+img {border:none;}
+
+.clearfix:after{content: "";display: block;clear: both;}
+.clearfix{zoom:1;}
+
+.fl {
+	float: left;
+}
+.fr {
+	float: right;
+}
+
+input,select,textarea{
+	outline: none;
+	border: none;
+	background: none;
+}
+
+/*dd去掉缩进*/
+dt{padding-left:0px;text-align: left;}
+dd{margin:0;padding:0;text-align: left;}

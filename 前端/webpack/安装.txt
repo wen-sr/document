@@ -1,0 +1,39 @@
+1 需要先安装node.js和git
+2 在gitbash中
+进入到项目目录中：
+npm init：会在项目目录下生成package.json
+//全局安装
+pm install -g webpack
+	//安装到你的项目目录
+npm install --save-dev webpack@1.15.0：会在项目目录下生成node_modules文件夹
+
+3 配置文件webpack.config.js
+	entry:js的入口文件
+	externals:外部依赖的声明
+	output:目标文件
+	resolve:配置别名
+	module:各种文件，各种loader
+	plugins:插件
+
+
+4 安装loader
+npm install --save-dev css-loader style-loader
+
+npm install webpack-dev-server@1.16.5 -g 
+npm install webpack-dev-server@1.16.5 --save-dev 
+webpack-dev-server:可以在文件改变时，自动刷新浏览器
+webpack-dev-server --port 8088 --inline
+
+
+安装插件：
+npm install ExtractTextPlugin --save-dev
+npm install html-webpack-plugin --save-dev
+安装loader：
+npm install style-loader css-loader html-loader url-loader file-loader --save-dev
+
+安装hogan
+npm install hogan --save-dev
+新版本的引入方式：var Hogan = require('hogan.js');
+
+
+安装font-awesome

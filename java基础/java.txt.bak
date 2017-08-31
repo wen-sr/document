@@ -1,0 +1,23 @@
+1 String.IndexOf(value, startIndex, count)
+
+  返回String 中 value的索引位置，如未找到返回-1
+
+2 lastIndexOf()  :返回最后一个匹配项的索引位置
+
+
+3 文件上传
+
+<input type="file">
+
+
+4 路径问题
+ 转发从应用名之后开始写
+ 连接地址。表单提交地址。重定向的绝对路径从应用名开始写
+  用 request.getContextPath();方法来获得应用名
+
+5 mysql 中文乱码问题
+  url:    jdbc:mysql://localhost:3306/dbname?useUnicode=true&characterEncoding=utf8
+
+6 <%= msg%> 相当与out.print(msg);
+  但是当msg为null时，会将null输出
+ 一般改为<%= msg == null?"":msg%>

@@ -1,0 +1,225 @@
+1、首先检查一下linux下是有存在以下软件，如果不存在，必须将这些软件安装(如：yum install compat-libstdc)
+rpm -q binutils compat-libcap1 pdksh compat-libstdc++-33 elfutils-libelf elfutils-libelf-devel glibc glibc-common glibc-devel gcc gcc-c++ libaio-devel libaio libgcc libstdc++ libstdc++-devel make sysstat unixODBC unixODBC-devel
+2、以root方式登陆，修改/etc/sysctl.conf，在文件中增加一下参数
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = 2097152
+kernel.shmmax = 4294967295
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range =9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default =262144
+net.core.wmem_max =1048576
+kernel.semmni=128
+然后创建数据库的所有者：
+groupadd oinstall
+groupadd dba
+创建安装目录：
+useradd -g oinstall -G dba Oracle 创建用户Oracle
+passwd Oracle（修改Oracle的密码）
+mkdir -p /u01/app/oracle
+chown -R Oracle:oinstall /u01/app
+chmod -R 755 /u01/app
+修改oracle用户的环境变量使本地能显示图形界面
+vi .bash_profile
+DISPLAY=141.168.40.188:0.0
+修改Oracle用户的限制
+cd /etc/security
+vi limits.conf
+在该文件增加一下内容
+Oracle soft nproc 2047
+Oracle hard nproc 16384
+Oracle soft nofile 1024
+Oracle hard nofile 65536
+oracle soft stack 10240
+在文件/etc/pam.d/login文件增加以下内容
+session required /lib/security/pam_limits.so
+session required pam_limits.so
+在文件/etc/profile增加以下内容
+
+if [$USER = "Oracle"] ; then
+if [ $SHELL = " /bin/ksh" ]; then
+ulimit -p 16384
+ulimit -n 65535
+else
+ulimit -u 16384 -n 65536
+fi
+fi
+
+执行命令，解压安装文件 ：unzip linux_11gR1_database.zip
+然后进入解压后的目录，执行
+$ ./runInstaller
+
+
+
+服务器配置：
+至强3.0GHZ *2
+4G ECC DDR内存
+300G SCSI Utrl 320 15K 硬盘 *2
+
+前提:
+内存和交换空间; 详情请看官方database\doc\install目录文档
+Available RAM Swap Space Required
+Between 1024 MB and 2048 MB 1.5 times the size of RAM 
+
+Between 2049 MB and 8192 MB Equal to the size of RAM
+More than 8192 MB 0.75 times the size of RAM
+
+一、准备服务器和操作系统：
+1、物理内存：4G
+2、交换空间4G
+3、禁用secure Linux
+4、已经安装下列包（为简单起见，安装RedHat AS 4时最好选择全部安装）：
+A、X Window System
+B、GNOME Desktop Environment
+C、Editors
+D、Graphical Internet
+E、Text-based Internet
+F、Server Configuration Tools
+G、Development Tools
+H、Administration Tools
+I、System Tools
+二、安装前的准备工作
+
+1.检查硬件
+内存
+# grep MemTotal /proc/meminfo
+交换空间
+# grep SwapTotal /proc/meminfo
+磁盘空间
+# df -ah
+2、下载软件
+Oracle Database 10g Release 2 (10.2.0.1) Software下载位置：
+http://otn.oracle.com/software/products/database/oracle10g/index.html
+3、修改host文件
+查看/etc/hosts文件中必须包含a fully qualified name for the server
+
+4. 安装软件包检查
+1、检查下列包是否安装，若未安装则要先安装：
+binutils-2.17.50.0.6-2.el5
+compat-libstdc++-33-3.2.3-61
+elfutils-libelf-0.125-3.el5
+elfutils-libelf-devel-0.125
+glibc-2.5-12
+glibc-common-2.5-12
+glibc-devel-2.5-12
+gcc-4.1.1-52
+gcc-c++-4.1.1-52
+libaio-0.3.106
+libaio-devel-0.3.106
+libgcc-4.1.1-52
+libstdc++-4.1.1
+libstdc++-devel-4.1.1-52.e15
+make-3.81-1.1
+sysstat-7.0.0
+unixODBC-2.2.11
+unixODBC-devel-2.2.11
+
+# rpm -qa | grep make gcc glibc compat openmotif21 setarch 等等
+
+5.做个链接(老版本需求,新版本oracle11不要设置):
+ln -s /usr/lib/libstdc++.so.6.0.3 /usr/lib/libstdc++.so.5            
+＃检测存在如果不做此链接，在安装过程中建好数据库，将会出现不能链接不上数据库问题。
+
+三.参数设置
+1、设置核心参数
+在/etc/sysctl.conf文件中加入下列行：
+#kernel.core_uses_pid = 1
+kernel.shmall = 2097152
+kernel.shmmax = 2147483648 -- (以字节为单位，物理内存数量*1024*1024*2，为内存的2倍)
+kernel.shmmni = 4096
+# semaphores: semmsl, semmns, semopm, semmni
+kernel.sem = 250 32000 100 128
+fs.file-max = 65536
+net.ipv4.ip_local_port_range = 1024 65000
+net.core.rmem_default=8388608
+net.core.rmem_max=8388608
+net.core.wmem_default=262144
+net.core.wmem_max=262144
+esc :wq!
+# sysctl -p #运行下列命令改变核心参数
+
+2、设置Shell Limits(系统资源限制),提高软件的运行效率
+
+a.在/etc/security/limits.conf文件中加入下列红色行：
+oracle soft nofile 65536
+oracle hard nofile 65536
+oracle soft nproc 16384
+oracle hard nproc 16384
+
+b.在/etc/pam.d/login文件中加入下列行，如果里面没有的话：
+session required /lib/security/pam_limits.so
+session required pam_limits.so
+c.在/etc/profile后加入以下语句:
+vi /etc/profile
+if [ $USER = "oracle" ]; then
+if [ $SHELL = "/bin/ksh" ]; then
+ulimit -p 16384
+ulimit -n 65536
+else
+ulimit -u 16384 -n 65536
+fi
+fi
+3.创建用户和组及相关目录
+--创建dba/oper/oinstall组
+/usr/sbin/groupadd dba
+/usr/sbin/groupadd oper
+/usr/sbin/groupadd oinstall
+--创建oracle用户并设置用户所属组
+/usr/sbin/usermod -g oinstall -G dba oracle
+/usr/sbin/useradd -g oinstall -G dba oracle
+passwd oracle
+# id oracle
+uid=501(oracle) gid=501(oinstall) groups=501(oinstall),502(dba)
+--创建相关安装目录
+
+mkdir -p /opt/oracle/product
+mkdir -p /opt/oracle/product/OraHome
+mkdir -p /opt/oraInventory                      #(the default inventory folder)
+mkdir -p /opt/oracle/oradata                   #(change the right file owner)
+mkdir -p /var/opt/oracle
+
+--设置目录所有者和权限
+chown -R oracle.oinstall /opt/oracle
+chown -R oracle.oinstall /opt/oracle/oradata
+chown -R oracle.oinstall /opt/oracle/product/OraHome
+chown -R oracle.dba /opt/oraInventory
+chown oracle.dba /var/opt/oracle
+chmod -R 775 /opt/oracle
+chmod -R 755 /var/opt/oracle
+
+4.设置安装环境变量
+# su - oracle --su到oracle用户下，
+更改用户的一些配置
+$vi .bash_profile
+添加以下参数，主要是配置oracle软件运环境参数
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+       . ~/.bashrc
+fi
+
+export ORACLE_BASE=/opt/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/OraHome
+export ORACLE_SID=orcl
+export ORACLE_OWNER=oracle
+export ORACLE_TERM=vt100
+export PATH=$PATH:$ORACLE_HOME/bin:$HOME/bin
+export PATH=$ORACLE_HOME/bin:$ORACLE_HOME/Apache/Apache/bin:$PATH
+LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib:/usr/local/lib
+export LD_LIBRARY_PATH
+CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+CLASSPATH=$CLASSPATH:$ORACLE_HOME/network/jlib
+export CLASSPATH
+
+注:
+11g:ORA_NLS33=$ORACLE_HOME/nls/admin/data
+10g：ORA_NLS33=$ORACLE_HOME/ocommon/nls/admin/data
+9i：ORA_NLS33=/oracle/app/ora92/ocommon/nls/admin/data
+保存退出
+--执行以下命令让配置马上生效或以oracle用户登录使设置生效
+$ source $HOME/.bash_profile
+
+
+本篇文章来源于 Linux公社网站(www.linuxidc.com)  原文链接：http://www.linuxidc.com/Linux/2009-07/21071.htm

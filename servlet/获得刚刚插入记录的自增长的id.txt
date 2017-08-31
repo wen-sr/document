@@ -1,0 +1,7 @@
+使用 PreparedStatement.RETURN_GENERATED_KEYS  可以获取刚刚插入自增ID值
+
+pst = conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+rs = pst.getGeneratedKeys();
+	if(rs.next()){
+		id = rs.getInt(1);
+	}

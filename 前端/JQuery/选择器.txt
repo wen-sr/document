@@ -1,0 +1,82 @@
+1 层级选择器
+	> （大于号）紧跟父子关系 如$("div > p")表示选择div下的直接层是p的节点。
+	
+	(空格)    任意层父子关系 如$("div p")表示选择div下的p节点（不管中间隔多少层）。
+
+	+ （加号）  紧跟兄弟关系 如$("div + p")表示选择div同层的下一个相邻的p节点。
+
+	~ （波浪线）任意距离兄弟关系 如$("div ~ p")表示选择div同层的后面的p节点。
+
+	,(逗号)   表示选择器组合，如$("div p, span p")表示div下p节点和span下p节点。
+	
+
+2 基本筛选选择器
+	:first			$("p:first")			第一个 <p> 元素
+	:last			$("p:last")				最后一个 <p> 元素
+	:even			$("tr:even")			所有偶数 <tr> 元素
+	:odd			$("tr:odd")				所有奇数 <tr> 元素
+			 
+	:eq(index)		$("ul li:eq(3)")		列表中的第四个元素（index 从 0 开始）
+	:gt(no)			$("ul li:gt(3)")		列出 index 大于 3 的元素
+	:lt(no)			$("ul li:lt(3)")		列出 index 小于 3 的元素
+	:not(selector)	$("input:not(:empty)")	所有不为空的 input 元素
+			 
+	:header			$(":header")			所有标题元素 <h1> - <h6>
+	:animated	 	$(':animated')			所有动画元素
+	:hidden			$("p:hidden")			所有隐藏的 <p> 元素
+	:visible		$("table:visible")		所有可见的表格
+	:enabled		$(":enabled")			所有激活的 input 元素
+	:disabled		$(":disabled")			所有禁用的 input 元素
+	:selected		$(":selected")			所有被选取的 input 元素
+	:checked		$(":checked")			所有被选中的 input 元素
+		
+	选中.left下input带有checked属性的所有兄弟p原色
+	$(".left input:checked ~ p").css("background-color", "#CD00CD");
+	
+	
+3 内容筛选选择器
+	:contains(text)	$(":contains('W3')")	包含指定字符串的所有元素
+	:parent			$(".left:parent")		有子（元素）节点的所有元素
+	:empty			$(":empty")				无子（元素）节点的所有元素（不适用于查找无子节点的div元素）
+	:has(selector)  $(":has('span')")		选择包含span子元素的节点
+	
+4 属性筛选选择器
+	//查找所有div中，属性name=p1的div元素
+         $("div[name='p1']")
+	//查找所有div中，有属性p2的div元素
+        $("div[p2]")
+	//查找所有div中，有属性name中的值只包含一个连字符“-”的div元素
+        $("div[name|='-']")
+	//查找所有div中，有属性name中的值包含一个连字符“空”和“a”的div元素
+        $("div[name~='a']")
+	//查找所有div中，属性name的值是用imooc开头的
+         $("div[name^='imooc']")
+	//查找所有div中，属性name的值是用imooc结尾的
+         $("div[name$='imooc']")
+	//查找所有div中，有属性name中的值包含一个test字符串的div元素
+        $('div[name*="test"]')
+	//查找所有div中，有属性testattr中的值没有包含"true"的div
+        $('div[testattr!="true"]')
+		
+5 子元素筛选选择器
+	//针对所有父级下的第一个，与eq不同，eq只能选到第一个
+        $(".first-div a:first-child")
+	//针对所有父级下的最后一个
+        $('.first-div a:last-child')
+	//查找class="first-div"下的只有一个子元素的a元素
+        $('.first-div a:only-child')
+	//查找class="last-div"下的第二个元素（从1开始）：选择的是他们所有父元素的第n个子元素,如果是a则执行，如果不是a，不执行
+        $('.last-div a:nth-child(2)')
+	//查找class="last-div"下的倒数第二个a元素
+        $('.last-div a:nth-last-child(2)')
+
+6 表单元素选择器
+	$(":input")
+
+7 特殊选择器this
+	this，表示当前的上下文对象是一个html对象，可以调用html对象所拥有的属性和方法。
+	$(this),代表的上下文对象是一个jquery的上下文对象，可以调用jQuery的方法和属性值。
+	
+
+
+

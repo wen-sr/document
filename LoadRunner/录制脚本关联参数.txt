@@ -1,0 +1,10 @@
+关联参数（session）处理：
+1 在需要添加session的位置的前一个会话的服务器响应中找到需要的值
+2 在所需要使用的喊上的上面添加函数：（web_reg_save_param("session",LB="",RB="",LAST);）
+	LB:所需文本字符串之前的字符串
+	RB：所需文本字符串之后的字符串
+	
+一般参数：
+点击文本，选择replace with parameter --> create new parameter
+	
+	

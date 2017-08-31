@@ -1,0 +1,16 @@
+容器会产生两大事件：
+  a 生命周期相关的事件：容器在创建或者销毁requet，session，sevletContext（servlet上下文）
+  b 绑定相关事件：容器调用了request，session，servletContext的setAttribute、removeAttribute方法
+
+
+
+Interface ServletContextListener:监听服务器启动和关闭
+
+web.xml 配置
+
+<listener>
+	<listener-class></listener-class>
+</listener>
+
+
+Interfacee ServletContextAttributreListener

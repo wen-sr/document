@@ -1,0 +1,13 @@
+vim编辑器的设置
+	vi /etc/prifile-->alias vi=vim
+	临时：
+	永久：修改etc/vimrc文件
+	syntax on :语法高亮
+	set number : 显示行号
+	set autoindent/set cindent : 自动缩进
+	自动加入文件头：
+	vi /etc/vimrc
+	
+#!/bin/bash--shell脚本第一行，指出shell的类型
+
+

@@ -1,0 +1,38 @@
+１、事件处理	 event
+	(1)事件绑订  e1.html
+		bind(type,fn)
+	(2)绑订方式的简写形式
+		click(function(){
+		});
+	(3)合成事件  e2.html, e3.html
+		hover(enter,leave) : 模拟光标悬停事件
+		toggle(fn1,fn2...)：模拟鼠标连续单击事件
+	(4)事件冒泡 
+		知识回顾
+		1)什么是事件冒泡?  e4.html
+			子节点产生的事件，会依次向上抛出给相应的父节点。
+		2)如何取消冒泡?
+			e.cancelBubble = true;
+		3)事件对象有何作用?
+			a, 取消冒泡
+				e.cancelBubble = true;
+			b,获得光标点击的坐标
+				e.clientX  e.clientY
+			c,找到事件源  e5.html
+				e.srcElement  //ie
+				e.target //firefox,chrome..
+		jQuery:	
+			1)获得事件对象  e6.html
+			click(function(e){
+				//e:对底层的事件对象做了一个封装
+			});
+			2)事件对象的属性  e6.html
+				event.type:事件类型
+				event.target:返回事件源(是dom对象)
+				event.pageX/pageY:点击的坐标
+		    3)停止冒泡
+				event.stopPropagation() e7.html
+		    4)停止默认行为 e8.html
+				event.preventDefault()
+	(5)模拟操作  e9.html
+			trigger('click')

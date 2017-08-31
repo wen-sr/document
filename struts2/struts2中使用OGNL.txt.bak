@@ -1,0 +1,28 @@
+在struts2中有一个称为值栈（valueStack）的概念
+  [N]:N 语法，得到n及一下所有的元素
+  [N].top(): 获得第一个元素
+
+在Struts2中，根对象就是ValueStack
+在struts2的任何流程当中，valueStack中最顶层对象一定是Action对象
+所以用struts2标签库时<s:property value="name"> 直接写name就可以了
+
+常用对象：叫做命名对象
+ parameters：#parameters.username
+ request：#request.username
+ session: #session.username
+ application: #application.username
+ attr: #attr.username
+
+命名空间 的对象并不在 valueStack 中，所以访问其中的对象必须加#
+
+访问静态方法或是静态成员变量的改进（在valueStack中）：@vs@method
+
+
+
+在OgnlAction中,实现RequestAware 接口，SessionAware接口，ApplicationAware接口
+
+ private Map<String,Object > requestMap;
+
+ public void setRequest(Map<String ,Object> request){
+	this.requestMap = request;
+ }

@@ -1,0 +1,3 @@
+1 Çå¿Õalert_log ÎÄ¼þ
+cp alert_wensr.log alert_wensr2014.log
+cat /dev/null > alert_wensr.log

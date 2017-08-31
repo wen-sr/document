@@ -1,0 +1,64 @@
+配置过程：
+
+1 jar 包
+commons-fileupload
+commons-io
+commons-logging
+freemarker
+javassist（jboss不需要）（在struts2的app中找）
+ognl
+struts2-core
+xwork-core
+
+另外测试时2.3.15版本的struts还需要添加commons-lang3
+
+2 在web.xml 配置转发器
+<filter>
+	<filter-name>struts2</filter-name>
+	<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>struts2</filter-name>
+	<url-pattern>/*</url-pattern>
+</filter-mapping>
+
+3 在src下建 struts.xml 文件
+
+用winRAR打开struts2的可执行应用文件，拷贝struts2.xml的 DTD 的头 部分
+
+
+
+<struts>
+	<package name="struts2" extends="struts-default">
+		<action name="login" class="struts.LoginAction">
+			<result name="success">/result.jsp</result>
+		</action>
+	</package>
+</struts>
+
+
+4 新建类  LoginAction
+
+	定义属性，get,set
+
+编写execute方法
+	public String execute(){
+		return SUCCESS;
+	}
+
+5 新建显示结果的页面 result.jsp
+
+
+
+
+
+流程分析：
+
+  表单提交action="login"-> web.xml ->struts.xml->action="login" class="LoginAction"
+  ->生成LoginAction的实例 ->自动调用set方法，将页面传入的值传入->
+  执行execute方法，返回SUCCESS -> 转到struts.xml 的 result ，执行result.jsp 
+
+
+*****可以在struts.xml中引入其他的xml文件
+在<struts>标签下
+<include file="....xml"/>
