@@ -1,0 +1,3 @@
+yum install ntpdate
+
+ntpdate -u 210.72.145.44 :网络时间同步命令

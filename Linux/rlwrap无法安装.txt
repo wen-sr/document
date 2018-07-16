@@ -1,0 +1,5 @@
+1 yum install -y readline*
+2 yum install -y readline-devel**
+3 yum install -y libtermcap-devel*
+
+./configure && make && make install

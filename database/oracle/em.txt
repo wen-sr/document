@@ -1,0 +1,2 @@
+--开启em
+emctl start dbconsole

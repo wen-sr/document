@@ -1,0 +1,5 @@
+vim /etc/profile
+if [ $USER = "oracle" ] ; then  
+if [ $SHELL = " /bin/ksh" ]; then 
+
+中括号前后加空格
