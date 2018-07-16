@@ -1,6 +1,6 @@
 Alter tablespace  WH1_DATA 
 add datafile '/oracle/oradata/PRD1/WH1DAT1.DBF'
-size 100M autoextend on next 500M maxsize 10000M
+size 100M autoextend on next 50M maxsize unlimited
 
 --查看表空间
 select tablespace_name,file_name,ceil(bytes/1024/1024) mb from dba_data_files order by 1 ;

@@ -3,6 +3,9 @@
 imp system/oracle@wensr file=E:\wh1\2014\07\33_28\wh1.dmp tables=(s
 torer) ignore=y
 
+imp wh1/wh1@prd1 file=d:\wh10508.dmp rows=y fromuser=wh1 log=e:wh1.log
+imp ssaadmin/ssasql@prd1 file=d:\ssaadmin20120504.dmp rows=y fromuser=wh1 log=e:wh1.log
+
 expdp system/oracle@wensr  file=d:\daochu.dmp tables=(inner_notify,notify_staff_relat) log=1.log  
 
 参数说明：
@@ -33,6 +36,12 @@ set nls_lang=AMERICAN_AMERICA.ZHS16GBK
 3 目标数据库的字符集尽量与原数据库一致
 4 查看dmp文件的字符集
 imp sys/oracle show=y file=u.dmp
+
+
+exp wmslog/wmslog@prd1 file=E:\wh1\wmslog.dmp log=E:\wh1\wmslog.log buffer=10000000
+imp ssaadmin/ssasql@prd_161 file=E:\wh1\ssaadmin.dmp log=E:\wh1\ssaadmin_imp.log fromuser=ssaadmin
+imp ssaadmin/ssasql@prd_161 file=E:\wh1\ssaadmin.dmp log=E:\wh1\ssaadmin_imp.log
+imp wmslog/wmslog@prd_161 file=E:\wh1\wmslog.dmp log=E:\wh1\wmslog_imp.log fromuser=wmslog STATISTICS=NONE
 
 
 

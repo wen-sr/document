@@ -1,0 +1,6 @@
+alter system set processes=600 scope=spfile;
+
+alter system set sessions=665 scope=spfile;
+
+
+sessions=(1.1*process+5)

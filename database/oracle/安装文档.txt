@@ -1,5 +1,6 @@
 1、首先检查一下linux下是有存在以下软件，如果不存在，必须将这些软件安装(如：yum install compat-libstdc)
-rpm -q binutils compat-libcap1 pdksh compat-libstdc++-33 elfutils-libelf elfutils-libelf-devel glibc glibc-common glibc-devel gcc gcc-c++ libaio-devel libaio libgcc libstdc++ libstdc++-devel make sysstat unixODBC unixODBC-devel
+rpm -q binutils compat-libcap1 pdksh compat-libstdc++-33 elfutils-libelf elfutils-libelf-devel glibc glibc-common glibc-devel gcc gcc-c++ libaio-devel libaio libgcc libstdc++ libstdc++-devel make sysstat unixODBC unixODBC-devel 
+yum install -y libXext.so.6(远程安装界面启动需要x-passive)
 2、以root方式登陆，修改/etc/sysctl.conf，在文件中增加一下参数
 fs.aio-max-nr = 1048576
 fs.file-max = 6815744
@@ -39,7 +40,7 @@ session required /lib/security/pam_limits.so
 session required pam_limits.so
 在文件/etc/profile增加以下内容
 
-if [$USER = "Oracle"] ; then
+if [$USER = "oracle"] ; then
 if [ $SHELL = " /bin/ksh" ]; then
 ulimit -p 16384
 ulimit -n 65535

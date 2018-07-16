@@ -133,6 +133,13 @@ create bigfile tablespace bigts datafile '/u01/app/oracle/oradata/wensr/bigts.bi
 --段管理
 create tablespace ................... segment management auto | manual;
 
+
+已使用的表空间大小
+select * from dba_segments where tablespace_name=$TABLESPACE_NAME; 
+
+未使用空间大小
+select * from dba_free_space where tablespace_name=$TABLESPACE_NAME;
+
 ----------------------------------------------------------------------------------------
 --逻辑结构 block-> extent-> segment ->tablespace ->database
 select tablespace_name,segment_name,extent_id,block_id,blocks from dba_extents where segment_name='EMP';

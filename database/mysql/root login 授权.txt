@@ -1,0 +1,8 @@
+--给某个ip授权
+grant all privileges on *.* to 'root'@'192.168.0.1' identified by '123456';
+--给所有ip授权
+grant all privileges on . to 'root'@'%' identified by 'oracle';
+
+
+--立即生效
+flush privileges;

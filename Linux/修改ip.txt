@@ -1,0 +1,4 @@
+vim /etc/sysconfig/network-scripts/ifcfg-eth0
+vim /etc/sysconfig/network-scripts/ifcfg-em1
+
+service network restart
