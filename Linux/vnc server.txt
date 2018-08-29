@@ -27,3 +27,5 @@ cp /etc/sysconfig/vncservers /lib/systemd/system/vncserver@:1.service
 	vncserver -kill :1 
 9 设置开机自动启动
 	systemctl enable vncserver@:1.service 
+	
+	service vncserver start

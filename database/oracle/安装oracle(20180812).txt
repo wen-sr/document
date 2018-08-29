@@ -1,0 +1,109 @@
+1 安装orcle需要的包
+安装64位oracle时需要同时安装32位和64位包，执行以下命令：
+echo 'multilib_policy=all' >> /etc/yum.conf
+
+rpm -q binutils compat-libcap1 pdksh compat-libstdc++-33 elfutils-libelf elfutils-libelf-devel glibc glibc-common glibc-devel gcc gcc-c++ libaio-devel libaio libgcc libstdc++ libstdc++-devel make sysstat unixODBC unixODBC-devel 
+远程安装界面启动需要x-passive
+yum install -y libXext.so.6
+安装rlwrap需要的包
+yum install -y readline*
+yum install -y readline-devel**
+yum install -y libtermcap-devel*
+
+另：如yum无法安装：
+rpm -ivh pdksh-5.2.14-37.el5_8.1.x86_64.rpm
+
+2 上传并解压安装包，安装工具包rlwrap
+unzip rlwrap....zip 
+tar zxvf rlwrap....tar.gz
+cd rlwrap....
+yum install -y readline*
+yum install -y readline-devel**
+yum install -y libtermcap-devel*
+yum install -y gcc
+./configure && make && make install
+./configure && make && make install
+ which rlwarp 
+  
+unzip linux.x64_11gR2_database_1of2.zip
+unzip linux.x64_11gR2_database_2of2.zip
+  
+3 创建oracle用户和组
+groupadd oinstall
+groupadd dba
+
+useradd -g oinstall -G dba oracle 
+passwd oracle
+mkdir -p /u01/app/oracle
+mv /tmp/database/ /u01/
+chown -R oracle:oinstall /u01
+chmod -R 755 /u01
+
+
+
+4 配置oracle用户环境变量
+vi .bash_profile
+
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1
+export ORACLE_SID=PRD1
+export PATH=.:$PATH:$ORACLE_HOME/bin:$ORACLE_HOME/OPatch
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+#PATH=$PATH:$HOME/bin
+DISPLAY=141.168.40.188:0.0
+export PATH
+
+stty erase ^h
+    alias sqlplus="rlwrap sqlplus"
+    alias rman="ralwrap rman"
+    alias vi="vim"
+
+立即生效
+source .bash_profile 
+
+5、以root方式登陆，修改/etc/sysctl.conf，在文件中增加一下参数
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = 2097152
+kernel.shmmax = 4294967295
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range =9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default =262144
+net.core.wmem_max =1048576
+
+
+立即生效
+sysctl -p
+
+6、修改oracle用户的限制，在文件/etc/security/limits.conf中增加以下内容
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+oracle soft stack 10240
+
+7、在文件/etc/pam.d/login文件增加以下内容
+session required /lib/security/pam_limits.so
+session required pam_limits.so
+
+8、在文件/etc/profile增加以下内容
+
+if [ $USER = "oracle" ] ; then
+if [ $SHELL = " /bin/ksh" ]; then
+ulimit -p 16384
+ulimit -n 65535
+else
+ulimit -u 16384 -n 65536
+fi
+fi
+
+9、进入解压后的目录，执行
+./runInstaller
+
+
+
+
+
