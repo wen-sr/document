@@ -1,0 +1,44 @@
+
+
+1 ****安装FTP****
+yum install -y vsftpd
+查看安装目录
+which vsftpd
+
+/etc/vsftpd/vsftpd.conf #主配置文件
+/etc/vsftpd/ftpusers #不能访问FTP用户列表
+/etc/vsftpd/user_list #不能访问FTP用户列表
+
+
+2 配置 vsftpd
+anonymous_enable=NO
+use_localtime=YES
+
+pasv_min_port=61001
+pasv_max_port=62000
+
+开启以下配置（去掉注释）：
+
+chroot_list_enable=YES
+chroot_list_file=/etc/vsftpd/chroot_list
+
+3 创建用户
+useradd -d /ftp/sku -s /sbin/nologin ftp-sku
+passwd ftp-sku
+chown -R ftp-sku.ftp-sku /ftp/sku/
+
+5 添加 FTP 用户到 chroot_list 文件中
+vim /etc/vsftpd/chroot_list
+6 关闭 selinux
+vim /etc/sysconfig/selinux
+7 修改防火墙配置
+vim /etc
+#vsftpd
+-A INPUT -p TCP --dport 61001:62000 -j ACCEPT
+-A OUTPUT -p TCP --sport 61001:62000 -j ACCEPT
+
+-A INPUT -p TCP --dport 20 -j ACCEPT
+-A OUTPUT -p TCP --dport 20 -j ACCEPT
+-A INPUT -p TCP --dport 21 -j ACCEPT
+-A OUTPUT -p TCP --dport 21 -j ACCEPT
+
